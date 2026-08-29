@@ -1,68 +1,69 @@
-# SceneryStack Template
+# Fluid Pressure and Flow
 
-[![CI](https://github.com/OpenPhysics/SceneryStackTemplate/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenPhysics/SceneryStackTemplate/actions/workflows/ci.yml)
+An interactive physics simulation about pressure in fluids at rest and in motion:
+how pressure grows with depth, why a fluid speeds up through a constriction, and
+how fast water leaves a hole in a tank.
 
-A reusable SceneryStack simulation template for one or N screens, built with
-[SceneryStack](https://scenerystack.org/), Vite 8, TypeScript 7, and Biome 2.
+A SceneryStack recreation of the [PhET Interactive
+Simulations](https://phet.colorado.edu/) simulation of the same name.
 
 ## Features
 
-- SceneryStack scaffold with model/view separation (`rename` + `scaffold-screens` for one or N screens)
-- English, Spanish, and French localization via `StringManager`
-- Default and projector color profiles
-- Progressive Web App (installable, offline-capable)
-- Git hooks for Biome pre-commit checks
-- Shared GitHub Actions CI via `OpenPhysics/Baton`
+- **Under Pressure** — hydrostatics in four vessels: a plain pool, a pair of
+  trapezoidal chambers that prove pressure does not care about shape, a
+  Pascal's-principle press, and a mystery pool where the fluid density or the
+  planet's gravity has to be worked out from a barometer reading.
+- **Flow** — an incompressible fluid through a pipe you reshape by dragging its
+  wall. Marker dots and an injectable grid make the velocity field visible;
+  barometers, speedometers and a flux meter make continuity and Bernoulli's
+  equation measurable.
+- **Water Tower** — Torricelli's law and the parabola that follows from it. Open
+  the hole, raise the tank, attach a hose and aim it, and measure the jet.
+- Three unit systems — metric, atmospheres and imperial — across every readout,
+  optionally matched across all three screens.
+- Full keyboard navigation and screen-reader support, in English, Spanish and
+  French.
+- Installable and playable offline as a Progressive Web App.
 
 ## Quick Start
 
 ```bash
 npm install
-npm run icons    # generate PNG icons from public/icons/icon.svg
-npm start        # dev server → http://localhost:5173
+npm start
 ```
+
+Then open the URL Vite prints (by default <http://localhost:5173>).
 
 ## Scripts
 
 | Command | Description |
 |---|---|
-| `npm start` / `npm run dev` | Start Vite dev server |
-| `npm run build` | Type-check + production build → `dist/` |
-| `npm run preview` | Preview the production build locally |
-| `npm test` | Run Vitest unit tests (includes memory-leak suite) |
-| `npm run test:fuzz` | Optional Playwright fuzz smoke (`?fuzz&ea`, default 30s) |
-| `npm run test:fuzz -- 90` | Same fuzz for 90 seconds (`--duration 90` or `FUZZ_DURATION=90` also work) |
-| `npm run test:fuzz:quick` | Shorter fuzz smoke (10s) |
-| `npm run test:fuzz:long` | Longer fuzz smoke (300s) |
-| `npm run check` | TypeScript type check |
-| `npm run lint` | Biome lint check |
-| `npm run format` | Auto-format all files |
-| `npm run fix` | Lint + auto-fix |
-| `npm run icons` | Regenerate PNG icons from `public/icons/icon.svg` |
-| `npm run rename` | Sim-level fork/rename (`--id`, `--name`) |
-| `npm run scaffold-screens` | Emit N fleet-named screen packages from `sim-screen/` (`--shared-model` optional) |
-| `npm run release` | `check && lint && build`, then version patch + push tags |
-| `npm run clean` | Remove `dist/` |
-
-`npm run release` intentionally skips `npm test` — template tests are samples. Real sims should append `&& npm test` (before the version bump) so a release cannot ship a failing suite.
-
-New sims start at `version: "0.0.0"` in `package.json`. Bump only when cutting a release (for example `npm version patch` and a matching git tag). Keep `name` in kebab-case; it is separate from the SceneryStack sim identifier in `src/init.ts`.
+| `npm start` / `npm run dev` | Vite dev server |
+| `npm run build` | Type-check and build for production |
+| `npm run build:single` | Build to a single self-contained HTML file |
+| `npm run preview` | Serve the production build |
+| `npm run check` | TypeScript across app, scripts and tests |
+| `npm run lint` / `npm run fix` | Biome check / auto-fix |
+| `npm test` | Vitest unit tests |
+| `npm run test:fuzz` | Playwright fuzz smoke test |
+| `npm run icons` | Regenerate PWA icons and screenshots |
 
 ## Tech Stack
 
-| Tool | Version | Purpose |
-|---|---|---|
-| [SceneryStack](https://scenerystack.org/) | ^3.0.0 | Simulation framework |
-| [Vite](https://vitejs.dev/) | ^8 | Build tool + dev server |
-| [TypeScript](https://www.typescriptlang.org/) | ^7 | Type-safe JavaScript |
-| [Biome](https://biomejs.dev/) | ^2.5 | Linting + formatting |
-| [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) | ^1 | PWA + service worker |
+- [SceneryStack](https://scenerystack.org/) — scenery, kite, dot, axon, sun,
+  scenery-phet and joist
+- TypeScript, Vite, Vitest, Playwright, Biome
+- `vite-plugin-pwa` for offline support
 
 ## License
 
-GNU Affero General Public License v3.0 — see [OpenPhysics org license](https://github.com/OpenPhysics/.github/blob/main/LICENSE).
+MIT. See the [organization
+defaults](https://github.com/OpenPhysics/.github/blob/main/LICENSE).
 
 ## Contributing
 
-See [OpenPhysics contributing guidelines](https://github.com/OpenPhysics/.github/blob/main/CONTRIBUTING.md).
-Report bugs via GitHub Issues; use org issue templates.
+See the [organization contributing
+guide](https://github.com/OpenPhysics/.github/blob/main/CONTRIBUTING.md).
+Physics and architecture are documented in [`doc/model.md`](doc/model.md) and
+[`doc/implementation-notes.md`](doc/implementation-notes.md); attribution for the
+original simulation is in [`CREDITS.md`](CREDITS.md).

@@ -1,12 +1,36 @@
-# Credits — SceneryStackTemplate
+# Credits
 
-Reusable SceneryStack simulation template (one or N screens) with Vite, TypeScript, Biome, PWA support, and i18n scaffolding.
+**Fluid Pressure and Flow** is an OpenPhysics SceneryStack recreation of the
+simulation of the same name by
+[PhET Interactive Simulations](https://phet.colorado.edu/) at the University of
+Colorado Boulder.
 
-## License
+## Original simulation
 
-GNU Affero General Public License v3.0 or later — see [org LICENSE](https://github.com/OpenPhysics/.github/blob/main/LICENSE).
+PhET's Fluid Pressure and Flow exists as a published Java simulation and as an
+[unpublished HTML5 port](https://github.com/phetsims/fluid-pressure-and-flow).
+The design, the three screens, the learning goals and the physical model are
+theirs.
 
-## Acknowledgments
+- **Lead design** — Sam Reid
+- **Software development** — Sam Reid, John Blanco
+- **Design team** — Noah Podolefsky, Ariel Paul, Trish Loeblein, Kathy Perkins,
+  Rachel Pepper, Bryce Gruneich
+- **HTML5 conversion** — Mobile Learner Labs, Actual Concepts
 
-Built with [SceneryStack](https://scenerystack.org/) as part of the
-[OpenPhysics](https://github.com/OpenPhysics) fleet.
+The 2012 design document, `doc/model.txt` and `doc/implementation-notes.txt` from
+the Java source were the primary references for this port, alongside the HTML5
+repository. Where this recreation departs from either, the departure is recorded
+in [`doc/model.md`](doc/model.md) and
+[`doc/implementation-notes.md`](doc/implementation-notes.md).
+
+## This recreation
+
+Built by OpenPhysics on [SceneryStack](https://scenerystack.org/). All artwork is
+drawn vectorially in Scenery; no assets from the original simulations are
+redistributed here.
+
+## Libraries
+
+- [SceneryStack](https://scenerystack.org/) — scenery, kite, dot, axon, sun,
+  scenery-phet, joist, and the rest of the PhET libraries it packages.

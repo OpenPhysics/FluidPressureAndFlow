@@ -1,21 +1,176 @@
 {
-  "title": "SceneryStack Template",
+  "title": "Fluid Pressure and Flow",
   "screens": {
-    "sim": "Sim"
+    "underPressure": "Under Pressure",
+    "flow": "Flow",
+    "waterTower": "Water Tower"
+  },
+  "common": {
+    "units": "Units",
+    "metric": "Metric",
+    "atmospheres": "Atmospheres",
+    "english": "English",
+    "unitLabels": {
+      "metric": {
+        "pressure": "kPa",
+        "distance": "m",
+        "velocity": "m/s",
+        "density": "kg/m³",
+        "gravity": "m/s²",
+        "flowRate": "L/s",
+        "flux": "L/(m²·s)",
+        "area": "m²"
+      },
+      "atmospheres": {
+        "pressure": "atm",
+        "distance": "m",
+        "velocity": "m/s",
+        "density": "kg/m³",
+        "gravity": "m/s²",
+        "flowRate": "L/s",
+        "flux": "L/(m²·s)",
+        "area": "m²"
+      },
+      "english": {
+        "pressure": "psi",
+        "distance": "ft",
+        "velocity": "ft/s",
+        "density": "lb/ft³",
+        "gravity": "ft/s²",
+        "flowRate": "ft³/s",
+        "flux": "ft³/(ft²·s)",
+        "area": "ft²"
+      }
+    },
+    "fluidDensity": "Fluid Density",
+    "gasoline": "gasoline",
+    "water": "water",
+    "honey": "honey",
+    "gravity": "Gravity",
+    "low": "low",
+    "earth": "Earth",
+    "high": "high",
+    "ruler": "Ruler",
+    "grid": "Grid",
+    "measuringTape": "Measuring Tape",
+    "atmosphere": "Atmosphere",
+    "on": "On",
+    "off": "Off",
+    "pressure": "Pressure",
+    "speed": "Speed",
+    "valueWithUnitsPattern": "{{value}} {{units}}",
+    "unknownValue": "—",
+    "slowMotion": "Slow Motion",
+    "normal": "Normal",
+    "open": "open",
+    "closed": "closed"
+  },
+  "underPressure": {
+    "scenes": {
+      "square": "Square Pool",
+      "trapezoid": "Trapezoid Pool",
+      "chamber": "Chamber Pool",
+      "mystery": "Mystery Pool"
+    },
+    "mysteryFluid": "Mystery Fluid",
+    "mysteryPlanet": "Mystery Planet",
+    "fluidA": "Fluid A",
+    "fluidB": "Fluid B",
+    "fluidC": "Fluid C",
+    "planetA": "Planet A",
+    "planetB": "Planet B",
+    "planetC": "Planet C",
+    "massLabelPattern": "{{mass}} kg"
+  },
+  "flow": {
+    "flowRate": "Flow Rate",
+    "friction": "Friction",
+    "fluxMeter": "Flux Meter",
+    "dots": "Dots",
+    "area": "Area",
+    "flux": "Flux"
+  },
+  "waterTower": {
+    "manual": "Manual",
+    "matchLeakage": "Match Leakage",
+    "hose": "Hose",
+    "fill": "Fill"
   },
   "a11y": {
-    "screenSummary": {
-      "playArea": "The play area shows the main simulation content.",
-      "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
-      "interactionHint": "Explore the simulation by interacting with its controls."
+    "underPressure": {
+      "screenSummary": {
+        "playArea": "An outdoor scene with a pool set into the ground. Sky and air are above the ground line; earth and the pool are below it. Barometers can be placed anywhere to read the pressure there.",
+        "controlArea": "Controls for the pool scene, the atmosphere, the units of every readout, the fluid in the pool, the strength of gravity, and a Reset All button.",
+        "interactionHint": "Choose a pool, then drag a barometer into the water and move it up and down to see how pressure changes with depth."
+      },
+      "currentDetails": "Showing the {{scene}}. {{placed}} of {{total}} barometers are placed. The atmosphere is {{atmosphere}}.",
+      "controls": {
+        "sceneChooser": "Pool Shape",
+        "atmosphereControl": "Atmosphere",
+        "unitsControl": "Units",
+        "rulerCheckbox": "Ruler",
+        "gridCheckbox": "Grid",
+        "fluidDensitySlider": "Fluid Density",
+        "gravitySlider": "Gravity",
+        "inputFaucet": "Fill Faucet",
+        "drainFaucet": "Drain Faucet",
+        "barometer": "Barometer",
+        "ruler": "Ruler",
+        "mass": "Weight",
+        "mysteryChooser": "Mystery Choice"
+      }
     },
-    "currentDetails": "The simulation is in its initial state.",
-    "controls": {
-      "exampleControl": "Example control"
+    "flow": {
+      "screenSummary": {
+        "playArea": "A pipe running left to right below the ground, carrying fluid from a source off the left of the screen. Handles on the pipe wall change its shape; dots carried along in the fluid show how fast it is moving.",
+        "controlArea": "Controls for the flow rate, wall friction, the flux meter, the marker dots, the ruler, the units of every readout, the fluid in the pipe, playback speed, and a Reset All button.",
+        "interactionHint": "Drag a pipe handle to narrow the pipe, then watch the dots and the barometer to see what happens to the speed and the pressure."
+      },
+      "currentDetails": "The fluid is flowing at {{flowRate}}. {{placed}} of {{total}} sensors are placed.",
+      "controls": {
+        "flowRateSlider": "Flow Rate",
+        "frictionCheckbox": "Friction",
+        "fluxMeterCheckbox": "Flux Meter",
+        "dotsCheckbox": "Dots",
+        "rulerCheckbox": "Ruler",
+        "unitsControl": "Units",
+        "fluidDensitySlider": "Fluid Density",
+        "barometer": "Barometer",
+        "speedometer": "Speedometer",
+        "ruler": "Ruler",
+        "pipeHandle": "Pipe Handle",
+        "gridInjector": "Inject Grid of Dots",
+        "fluxMeter": "Flux Meter"
+      }
+    },
+    "waterTower": {
+      "screenSummary": {
+        "playArea": "A water tower standing on the ground with a faucet above it and a hole near its base. Water leaving the hole falls as a stream that can be measured.",
+        "controlArea": "Controls for the faucet, the hose, the ruler, the measuring tape, the units of every readout, the fluid in the tank, playback speed, and a Reset All button.",
+        "interactionHint": "Open the hole at the base of the tank, then raise and lower the tank to see how the height of the water changes the speed of the stream."
+      },
+      "currentDetails": "The tank is {{fill}} percent full and the hole at its base is {{hole}}.",
+      "controls": {
+        "faucetModeControl": "Faucet Mode",
+        "fillButton": "Fill Tank",
+        "hoseCheckbox": "Hose",
+        "rulerCheckbox": "Ruler",
+        "measuringTapeCheckbox": "Measuring Tape",
+        "unitsControl": "Units",
+        "fluidDensitySlider": "Fluid Density",
+        "barometer": "Barometer",
+        "speedometer": "Speedometer",
+        "ruler": "Ruler",
+        "measuringTape": "Measuring Tape",
+        "sluiceControl": "Hole Cover",
+        "tankHandle": "Tank Height",
+        "hoseAngleHandle": "Hose Angle"
+      }
     }
   },
   "preferences": {
     "title": "Simulation",
-    "exampleToggle": "Example Toggle"
+    "linkUnits": "Match units across screens",
+    "linkUnitsDescription": "When on, choosing a unit system on one screen sets it on all three."
   }
 }

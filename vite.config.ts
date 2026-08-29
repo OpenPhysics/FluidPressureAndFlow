@@ -167,11 +167,11 @@ export default defineConfig(({ mode }) => {
             registerType: "autoUpdate",
             includeAssets: ["favicon.ico", "icons/apple-touch-icon.png"],
             manifest: {
-              id: "scenerystack-template",
-              name: "SceneryStack Template",
+              id: "fluid-pressure-and-flow",
+              name: "Fluid Pressure and Flow",
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
-              short_name: "SimTemplate",
-              description: "A SceneryStack simulation template for one or N screens",
+              short_name: "FluidPressureAndFlow",
+              description: "A SceneryStack simulation: Fluid Pressure and Flow",
               categories: ["education", "science"],
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
               theme_color: "#1a1a2e",
@@ -207,7 +207,7 @@ export default defineConfig(({ mode }) => {
                   type: "image/png",
                   // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
                   form_factor: "wide",
-                  label: "SceneryStack Template",
+                  label: "Fluid Pressure and Flow",
                 },
                 {
                   src: "screenshots/narrow.png",
@@ -215,7 +215,7 @@ export default defineConfig(({ mode }) => {
                   type: "image/png",
                   // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
                   form_factor: "narrow",
-                  label: "SceneryStack Template",
+                  label: "Fluid Pressure and Flow",
                 },
               ],
             },

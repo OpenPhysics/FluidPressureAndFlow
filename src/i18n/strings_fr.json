@@ -1,21 +1,176 @@
 {
-  "title": "Modèle de Simulation",
+  "title": "Pression et écoulement des fluides",
   "screens": {
-    "sim": "Sim"
+    "underPressure": "Sous pression",
+    "flow": "Écoulement",
+    "waterTower": "Château d'eau"
+  },
+  "common": {
+    "units": "Unités",
+    "metric": "Métrique",
+    "atmospheres": "Atmosphères",
+    "english": "Impérial",
+    "unitLabels": {
+      "metric": {
+        "pressure": "kPa",
+        "distance": "m",
+        "velocity": "m/s",
+        "density": "kg/m³",
+        "gravity": "m/s²",
+        "flowRate": "L/s",
+        "flux": "L/(m²·s)",
+        "area": "m²"
+      },
+      "atmospheres": {
+        "pressure": "atm",
+        "distance": "m",
+        "velocity": "m/s",
+        "density": "kg/m³",
+        "gravity": "m/s²",
+        "flowRate": "L/s",
+        "flux": "L/(m²·s)",
+        "area": "m²"
+      },
+      "english": {
+        "pressure": "psi",
+        "distance": "ft",
+        "velocity": "ft/s",
+        "density": "lb/ft³",
+        "gravity": "ft/s²",
+        "flowRate": "ft³/s",
+        "flux": "ft³/(ft²·s)",
+        "area": "ft²"
+      }
+    },
+    "fluidDensity": "Masse volumique",
+    "gasoline": "essence",
+    "water": "eau",
+    "honey": "miel",
+    "gravity": "Gravité",
+    "low": "faible",
+    "earth": "Terre",
+    "high": "forte",
+    "ruler": "Règle",
+    "grid": "Grille",
+    "measuringTape": "Mètre ruban",
+    "atmosphere": "Atmosphère",
+    "on": "Activée",
+    "off": "Désactivée",
+    "pressure": "Pression",
+    "speed": "Vitesse",
+    "valueWithUnitsPattern": "{{value}} {{units}}",
+    "unknownValue": "—",
+    "slowMotion": "Ralenti",
+    "normal": "Normal",
+    "open": "ouvert",
+    "closed": "fermé"
+  },
+  "underPressure": {
+    "scenes": {
+      "square": "Bassin rectangulaire",
+      "trapezoid": "Bassin trapézoïdal",
+      "chamber": "Bassin à chambres",
+      "mystery": "Bassin mystère"
+    },
+    "mysteryFluid": "Fluide mystère",
+    "mysteryPlanet": "Planète mystère",
+    "fluidA": "Fluide A",
+    "fluidB": "Fluide B",
+    "fluidC": "Fluide C",
+    "planetA": "Planète A",
+    "planetB": "Planète B",
+    "planetC": "Planète C",
+    "massLabelPattern": "{{mass}} kg"
+  },
+  "flow": {
+    "flowRate": "Débit",
+    "friction": "Frottement",
+    "fluxMeter": "Débitmètre",
+    "dots": "Points",
+    "area": "Aire",
+    "flux": "Flux"
+  },
+  "waterTower": {
+    "manual": "Manuel",
+    "matchLeakage": "Égaler la fuite",
+    "hose": "Tuyau",
+    "fill": "Remplir"
   },
   "a11y": {
-    "screenSummary": {
-      "playArea": "La zone de jeu affiche le contenu principal de la simulation.",
-      "controlArea": "La zone de contrôle comporte un bouton Tout réinitialiser qui ramène la simulation à son état initial.",
-      "interactionHint": "Explorez la simulation en interagissant avec ses commandes."
+    "underPressure": {
+      "screenSummary": {
+        "playArea": "Une scène en plein air avec un bassin creusé dans le sol. Le ciel et l'air sont au-dessus de la ligne du sol ; la terre et le bassin, en dessous. Les baromètres peuvent être placés n'importe où pour y lire la pression.",
+        "controlArea": "Commandes pour la forme du bassin, l'atmosphère, les unités de chaque affichage, le fluide du bassin, l'intensité de la gravité, et un bouton Tout réinitialiser.",
+        "interactionHint": "Choisissez un bassin, puis faites glisser un baromètre dans l'eau et déplacez-le de haut en bas pour voir comment la pression varie avec la profondeur."
+      },
+      "currentDetails": "Le {{scene}} est affiché. {{placed}} baromètres sur {{total}} sont placés. L'atmosphère est {{atmosphere}}.",
+      "controls": {
+        "sceneChooser": "Forme du bassin",
+        "atmosphereControl": "Atmosphère",
+        "unitsControl": "Unités",
+        "rulerCheckbox": "Règle",
+        "gridCheckbox": "Grille",
+        "fluidDensitySlider": "Masse volumique",
+        "gravitySlider": "Gravité",
+        "inputFaucet": "Robinet de remplissage",
+        "drainFaucet": "Robinet de vidange",
+        "barometer": "Baromètre",
+        "ruler": "Règle",
+        "mass": "Masse",
+        "mysteryChooser": "Choix mystère"
+      }
     },
-    "currentDetails": "La simulation est dans son état initial.",
-    "controls": {
-      "exampleControl": "Contrôle d'exemple"
+    "flow": {
+      "screenSummary": {
+        "playArea": "Une conduite qui traverse l'écran de gauche à droite sous le sol et transporte un fluide depuis une source hors champ. Des poignées sur la paroi modifient sa forme ; des points entraînés par le fluide montrent sa vitesse.",
+        "controlArea": "Commandes pour le débit, le frottement à la paroi, le débitmètre, les points marqueurs, la règle, les unités de chaque affichage, le fluide de la conduite, la vitesse de lecture, et un bouton Tout réinitialiser.",
+        "interactionHint": "Faites glisser une poignée pour rétrécir la conduite, puis observez les points et le baromètre pour voir ce qu'il advient de la vitesse et de la pression."
+      },
+      "currentDetails": "Le fluide s'écoule à {{flowRate}}. {{placed}} capteurs sur {{total}} sont placés.",
+      "controls": {
+        "flowRateSlider": "Débit",
+        "frictionCheckbox": "Frottement",
+        "fluxMeterCheckbox": "Débitmètre",
+        "dotsCheckbox": "Points",
+        "rulerCheckbox": "Règle",
+        "unitsControl": "Unités",
+        "fluidDensitySlider": "Masse volumique",
+        "barometer": "Baromètre",
+        "speedometer": "Indicateur de vitesse",
+        "ruler": "Règle",
+        "pipeHandle": "Poignée de la conduite",
+        "gridInjector": "Injecter une grille de points",
+        "fluxMeter": "Débitmètre"
+      }
+    },
+    "waterTower": {
+      "screenSummary": {
+        "playArea": "Un château d'eau posé sur le sol, avec un robinet au-dessus et un orifice près de sa base. L'eau qui sort de l'orifice retombe en un jet que l'on peut mesurer.",
+        "controlArea": "Commandes pour le robinet, le tuyau, la règle, le mètre ruban, les unités de chaque affichage, le fluide du réservoir, la vitesse de lecture, et un bouton Tout réinitialiser.",
+        "interactionHint": "Ouvrez l'orifice à la base du réservoir, puis montez et descendez le réservoir pour voir comment la hauteur d'eau modifie la vitesse du jet."
+      },
+      "currentDetails": "Le réservoir est rempli à {{fill}} pour cent et l'orifice de sa base est {{hole}}.",
+      "controls": {
+        "faucetModeControl": "Mode du robinet",
+        "fillButton": "Remplir le réservoir",
+        "hoseCheckbox": "Tuyau",
+        "rulerCheckbox": "Règle",
+        "measuringTapeCheckbox": "Mètre ruban",
+        "unitsControl": "Unités",
+        "fluidDensitySlider": "Masse volumique",
+        "barometer": "Baromètre",
+        "speedometer": "Indicateur de vitesse",
+        "ruler": "Règle",
+        "measuringTape": "Mètre ruban",
+        "sluiceControl": "Couvercle de l'orifice",
+        "tankHandle": "Hauteur du réservoir",
+        "hoseAngleHandle": "Angle du tuyau"
+      }
     }
   },
   "preferences": {
     "title": "Simulation",
-    "exampleToggle": "Exemple de bascule"
+    "linkUnits": "Harmoniser les unités entre les écrans",
+    "linkUnitsDescription": "Activé, le choix d'un système d'unités sur un écran s'applique aux trois."
   }
 }

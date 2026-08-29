@@ -21,24 +21,45 @@ import "./brand.js";
 
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
+import FluidPressureAndFlowColors from "./FluidPressureAndFlowColors.js";
+import { FlowScreen } from "./flow/FlowScreen.js";
 import { StringManager } from "./i18n/StringManager.js";
-import { SimPreferencesModel } from "./preferences/SimPreferencesModel.js";
-import { SimPreferencesNode } from "./preferences/SimPreferencesNode.js";
-import SimColors from "./SimColors.js";
-import { SimScreen } from "./sim-screen/SimScreen.js";
+import { FluidPressureAndFlowPreferencesModel } from "./preferences/FluidPressureAndFlowPreferencesModel.js";
+import { FluidPressureAndFlowPreferencesNode } from "./preferences/FluidPressureAndFlowPreferencesNode.js";
+import { UnderPressureScreen } from "./under-pressure/UnderPressureScreen.js";
+import { WaterTowerScreen } from "./water-tower/WaterTowerScreen.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
 
-  // Simulation-specific preferences; initial values come from simQueryParameters.
-  const simPreferences = new SimPreferencesModel(Tandem.ROOT.createTandem("preferences"));
+  // Simulation-specific preferences; initial values come from fluidPressureAndFlowQueryParameters.
+  const simPreferences = new FluidPressureAndFlowPreferencesModel(Tandem.ROOT.createTandem("preferences"));
+
+  // One unit system shared by all three screens, gated on the "match units"
+  // preference. Built here because no single screen owns it.
+  const sharedUnits = {
+    sharedUnitSystemProperty: simPreferences.sharedUnitSystemProperty,
+    linkUnitsProperty: simPreferences.linkUnitsProperty,
+  };
 
   const screens = [
-    new SimScreen({
-      // The screen name Property updates automatically when the locale changes
-      name: stringManager.getScreenNames().simStringProperty,
-      tandem: Tandem.ROOT.createTandem("simScreen"),
-      backgroundColorProperty: SimColors.backgroundColorProperty,
+    new UnderPressureScreen({
+      sharedUnits: sharedUnits,
+      name: stringManager.getScreenNames().underPressureStringProperty,
+      tandem: Tandem.ROOT.createTandem("underPressureScreen"),
+      backgroundColorProperty: FluidPressureAndFlowColors.backgroundColorProperty,
+    }),
+    new FlowScreen({
+      sharedUnits: sharedUnits,
+      name: stringManager.getScreenNames().flowStringProperty,
+      tandem: Tandem.ROOT.createTandem("flowScreen"),
+      backgroundColorProperty: FluidPressureAndFlowColors.backgroundColorProperty,
+    }),
+    new WaterTowerScreen({
+      sharedUnits: sharedUnits,
+      name: stringManager.getScreenNames().waterTowerStringProperty,
+      tandem: Tandem.ROOT.createTandem("waterTowerScreen"),
+      backgroundColorProperty: FluidPressureAndFlowColors.backgroundColorProperty,
     }),
   ];
 
@@ -53,7 +74,7 @@ onReadyToLaunch(() => {
       simulationOptions: {
         customPreferences: [
           {
-            createContent: (tandem: Tandem) => new SimPreferencesNode(simPreferences, tandem),
+            createContent: (tandem: Tandem) => new FluidPressureAndFlowPreferencesNode(simPreferences, tandem),
           },
         ],
       },
@@ -63,12 +84,12 @@ onReadyToLaunch(() => {
       },
     }),
 
-    // Optional: fill in credits shown in Help → About
+    // Credits shown in Help → About. The design is PhET's; this is a port.
     credits: {
-      leadDesign: "",
-      softwareDevelopment: "",
-      team: "",
-      qualityAssurance: "",
+      leadDesign: "Sam Reid (PhET Interactive Simulations)",
+      softwareDevelopment: "OpenPhysics, ported from PhET Interactive Simulations",
+      team: "Noah Podolefsky, Ariel Paul, Trish Loeblein, Kathy Perkins, Rachel Pepper, Bryce Gruneich, John Blanco",
+      qualityAssurance: "PhET Interactive Simulations",
     },
   });
 

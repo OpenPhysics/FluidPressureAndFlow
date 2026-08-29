@@ -1,0 +1,91 @@
+/**
+ * WaterTower.ts
+ *
+ * The tank itself: a cylinder on legs, with a hole near its base that the
+ * student can uncover.
+ *
+ * The tank's height above ground is adjustable, and that is the screen's central
+ * control. Torricelli's law says the efflux speed depends on the head of water
+ * above the hole and on nothing else — not on how much water there is, not on
+ * what the fluid is. Being able to raise the whole tank without changing the
+ * water in it is what makes "not the height above the ground, the height above
+ * the hole" testable.
+ */
+
+import { BooleanProperty, DerivedProperty, NumberProperty, Property, type TReadOnlyProperty } from "scenerystack/axon";
+import { Vector2 } from "scenerystack/dot";
+
+/** Radius of the tank, metres. */
+export const TANK_RADIUS = 5;
+
+/** Height of the tank, metres. */
+export const TANK_HEIGHT = 10;
+
+/** Highest the tank's base may be dragged, metres. */
+export const MAX_TANK_BASE_Y = 18;
+
+/** Lowest the tank's base may be dragged, metres. Keeps the legs on the ground. */
+export const MIN_TANK_BASE_Y = 6;
+
+/** Where the tank's base starts, metres. Not at the top, so it can be raised as well as lowered. */
+export const INITIAL_TANK_BASE_Y = 15;
+
+/** Diameter of the hole in the tank's side, metres. */
+export const HOLE_SIZE = 1;
+
+/** Full capacity of the tank, m³. */
+export const TANK_VOLUME = Math.PI * TANK_RADIUS * TANK_RADIUS * TANK_HEIGHT;
+
+/**
+ * How full the tank starts, as a fraction of capacity.
+ *
+ * Not completely full, so the fill button and the faucet are both live from the
+ * first frame — a control that starts disabled is one a student may never
+ * discover.
+ */
+const INITIAL_FILL_FRACTION = 0.8;
+
+export class WaterTower {
+  /** Centre of the tank's base, model coordinates (metres). */
+  public readonly baseCenterProperty = new Property(new Vector2(0, INITIAL_TANK_BASE_Y));
+
+  /** Volume of fluid in the tank, m³. */
+  public readonly fluidVolumeProperty = new NumberProperty(TANK_VOLUME * INITIAL_FILL_FRACTION);
+
+  /** Whether the hole in the side is uncovered. Closed at first, so nothing happens until asked. */
+  public readonly isHoleOpenProperty = new BooleanProperty(false);
+
+  /** True when the tank cannot take any more. */
+  public readonly isFullProperty: TReadOnlyProperty<boolean>;
+
+  public constructor() {
+    this.isFullProperty = new DerivedProperty([this.fluidVolumeProperty], (volume) => volume >= TANK_VOLUME - 1e-9);
+  }
+
+  /** Depth of fluid standing in the tank, metres. */
+  public getFluidLevel(): number {
+    return this.fluidVolumeProperty.value / (Math.PI * TANK_RADIUS * TANK_RADIUS);
+  }
+
+  /** Altitude of the fluid's surface, metres. */
+  public getFluidSurfaceY(): number {
+    return this.baseCenterProperty.value.y + this.getFluidLevel();
+  }
+
+  /** Where fluid leaves the tank: the hole in the right-hand wall, at the base. */
+  public getHolePosition(): Vector2 {
+    const base = this.baseCenterProperty.value;
+    return new Vector2(base.x + TANK_RADIUS, base.y + HOLE_SIZE / 2);
+  }
+
+  /** Fills the tank to capacity. Wired to the Fill button. */
+  public fill(): void {
+    this.fluidVolumeProperty.value = TANK_VOLUME;
+  }
+
+  public reset(): void {
+    this.baseCenterProperty.reset();
+    this.fluidVolumeProperty.reset();
+    this.isHoleOpenProperty.reset();
+  }
+}

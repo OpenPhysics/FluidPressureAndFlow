@@ -1,223 +1,114 @@
-# CLAUDE.md — SceneryStack Template
+# CLAUDE.md — Fluid Pressure and Flow
 
-Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhysics/.github/CLAUDE.md](https://github.com/OpenPhysics/.github/blob/main/CLAUDE.md).
+Sim-specific context for AI assistants. General SceneryStack guidance:
+[OpenPhysics/.github/CLAUDE.md](https://github.com/OpenPhysics/.github/blob/main/CLAUDE.md).
 
-## Project
+## What this is
 
-Reusable SceneryStack template (one or N screens) and **canonical accessibility reference** for
-OpenPhysics sims. Prefer `Baton/scripts/create-sim.sh` (or GitHub **Use this template** +
-`npm run rename` + `npm run scaffold-screens`) to fork it. For multi-screen sims, see
-[`doc/multi-screen.md`](doc/multi-screen.md).
+A SceneryStack recreation of PhET's **Fluid Pressure and Flow** — three screens:
+Under Pressure, Flow, Water Tower.
+
+PhET's own HTML5 port
+([phetsims/fluid-pressure-and-flow](https://github.com/phetsims/fluid-pressure-and-flow))
+has **never been published**. PhET's 2019 evaluation
+([#323](https://github.com/phetsims/fluid-pressure-and-flow/issues/323)) found
+"significant duplication of code, particularly in the model", retracted its own
+effort estimate, and shelved the sim; no design or model work has happened since.
+This is a rebuild to fleet conventions rather than a transliteration, and several
+of the architectural choices here are direct answers to that review — see
+`doc/implementation-notes.md` § "What is shared, and why".
+
+**Read `doc/model.md` before touching any physics.** Its "Known simplifications"
+section lists ten places where the model deliberately is not the physics. Most
+are inherited from PhET and most look like bugs until you read why they are
+there. Two in particular have tests pinning the current behaviour so that
+changing them is deliberate: the chamber pool's 5:1 width coupling, and the fact
+that the Flow screen's friction checkbox does not affect pressure or flux.
+
+## Ground truth
+
+The PhET Java source is available locally and was the primary reference:
+
+```
+Baseline/PhET/trunk/simulations-java/simulations/fluid-pressure-and-flow/
+  src/edu/colorado/phet/fluidpressureandflow/   103 .java files
+  doc/model.txt  doc/implementation-notes.txt
+  doc/FluidPressureandFlow-DesignDoc-6-13-2012.pdf   (pdftotext -layout)
+  screenshots/                                       layout reference
+```
+
+Geometry and constants come from there; the Mystery pool and a few constants come
+from the HTML5 repo, which is reachable with `gh api`.
 
 ## Key files
 
 | File | Purpose |
 |---|---|
-| `src/SimColors.ts` | All `ProfileColorProperty` instances |
-| `src/SimConstants.ts` | Named numeric constants (layout px, physics SI units) |
-| `src/SimNamespace.ts` | Namespace for color property names |
-| `src/i18n/StringManager.ts` | Singleton localized string accessor |
-| `src/sim-screen/SimScreen.ts` | Screen wrapper |
-| `src/sim-screen/model/SimModel.ts` | Simulation state and logic |
-| `src/sim-screen/view/SimScreenView.ts` | Visual nodes, layout, `screenSummaryContent` + `pdomOrder` |
-| `src/sim-screen/view/SimScreenSummaryContent.ts` | Accessible screen summary (reference a11y pattern) |
-| `src/sim-screen/view/SimKeyboardHelpContent.ts` | Keyboard-help dialog content |
-| `src/common/SimPanel.ts` | Pre-themed `Panel` wrapper (uses `SimColors` automatically) |
-| `src/common/SimButtonOptions.ts` | Flat button-appearance option bundles + light-control-surface combo-box options |
-| `src/common/TimeModel.ts` | Composable play/pause + elapsed-time model for animated sims |
-| `scripts/generate-icons.ts` | PNG icons from `public/icons/icon.svg` |
-| `scripts/rename-sim.ts` | Sim-level fork/rename (package id + metadata, Colors, Constants, Panel, ButtonOptions, Preferences) |
-| `scripts/scaffold-screens.ts` | Emit N screen packages + wire main/strings/icons |
+| `src/common/model/FluidPressureAndFlowModel.ts` | Abstract base: gravity, density, units, atmosphere, sensors. `getPressureAt` is the only abstract method. |
+| `src/common/model/units.ts` | `UnitSystem` enumeration; all conversion, display-time only |
+| `src/common/model/airPressure.ts` | The linear air column |
+| `src/common/model/fluidColor.ts` | Density → colour, and the mystery purples |
+| `src/under-pressure/model/Pool.ts` | The three-way pressure branch, written once |
+| `src/flow/model/Pipe.ts` | Spline wall, continuity, the friction profile |
+| `src/flow/model/spline.ts` | Natural cubic spline; replaces upstream's `numeric.js` |
+| `src/water-tower/model/WaterTowerModel.ts` | Torricelli, drops, fixed timestep |
+| `src/under-pressure/view/PoolNode.ts` | Draws all four pools from model shapes |
+| `src/common/view/SensorToolboxNode.ts` | Tray; hands presses to instrument nodes |
 
-## Common components
+## Conventions that bite here
 
-### SimPanel
-
-Every control panel and info box in the sim should use `SimPanel` so that
-default/projector color switching is automatic:
-
-```typescript
-import { SimPanel } from "../../common/SimPanel.js";
-const panel = new SimPanel(content);              // uses SimColors defaults
-const panel = new SimPanel(content, { xMargin: 20 }); // override any PanelOption
-```
-
-### TimeModel
-
-For simulations with animation, compose `TimeModel` into your screen model:
-
-```typescript
-import { TimeModel } from "../../common/TimeModel.js";
-
-export class MyModel implements TModel {
-  public readonly timer = new TimeModel();   // starts paused; pass true to auto-play
-
-  public step(dt: number): void {
-    this.timer.step(dt);
-    // use this.timer.timeProperty.value for physics
-  }
-  public reset(): void { this.timer.reset(); /* … */ }
-}
-```
-
-Wire the view to `TimeControlNode` from `scenerystack/scenery-phet` binding on
-`model.timer.isPlayingProperty`.
-
-### SimButtonOptions
-
-SceneryStack's push/round buttons default to a 3-D/beveled look; every button in the sim
-should be flat instead. Spread these into the relevant options object:
-
-```typescript
-import { FLAT_RESET_ALL_BUTTON_OPTIONS, FLAT_RECTANGULAR_BUTTON_OPTIONS } from "../../common/SimButtonOptions.js";
-
-const resetAllButton = new ResetAllButton({ ...FLAT_RESET_ALL_BUTTON_OPTIONS, listener: () => {...} });
-const exampleButton = new RectangularPushButton({ ...FLAT_RECTANGULAR_BUTTON_OPTIONS, content, listener });
-```
-
-`FLAT_PLAY_PAUSE_STEP_BUTTON_OPTIONS` spreads into `TimeControlNode`'s `playPauseStepButtonOptions`;
-`TIME_CONTROL_SPEED_RADIO_OPTIONS` fixes `TimeControlNode`'s speed-radio label color, which
-otherwise defaults to black text on the sim's dark default-mode panels. `SIM_COMBO_BOX_OPTIONS`
-themes a `ComboBox`'s button/list chrome to the light control surface below; pair item labels
-with `LIGHT_SURFACE_TEXT_FILL` (not `SimColors.textColorProperty`, which is for panel-fill text).
-
-`SimColors.ts` backs this with a "light control surfaces" section —
-`controlSurfaceColorProperty`, `controlSurfaceDisabledColorProperty`,
-`controlSurfaceTextColorProperty` — identical white/dark-text values in both default and
-projector profiles, so any component that must stay light regardless of theme (combo boxes,
-flat buttons, editable fields) keeps readable contrast automatically.
-
-## Accessibility
-
-This template is the **canonical accessibility reference** for OpenPhysics sims. It ships with
-the three required layers wired up: PDOM names, a `SimScreenSummaryContent`, and an explicit
-`pdomOrder` + `SimKeyboardHelpContent`. A11y strings live under the `a11y` key in each locale
-JSON, exposed via `StringManager.getA11yStrings()`. When building a real sim, make
-`currentDetailsContent` a live `DerivedProperty` over model state and add `accessibleName`s to
-every interactive node. Full convention and checklist: [Baton/ACCESSIBILITY.md](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
+- **Model is SI throughout.** Never convert inside `model/`. `formatValue` and
+  `toDisplayValue` in `units.ts` are the only places conversion happens.
+- **`+y` is up, `y = 0` is ground.** Every screen. The `ModelViewTransform2` in
+  each ScreenView flips it; nothing else does its own arithmetic.
+- **Shape caching matters.** `getPressureAt` runs per barometer per frame and
+  two pools use polygon boolean ops. Container shapes are cached; water shapes
+  are `DerivedProperty`s. Don't build shapes in a hot path.
+- **Flow tracers store a fraction, not a `y`.** Changing that would let them
+  pass through the pipe wall as it closes.
+- **Canvas for particles.** Both dynamic screens draw their particles on a
+  `CanvasNode` and call `invalidatePaint()` from the ScreenView's `step`.
 
 ## Compliance carve-outs
 
-A clean fork of this template rarely needs compliance carve-outs — root `SimConstants.ts`,
-`*Colors.ts`, `*Namespace.ts`, standard screen layout, and full a11y wiring pass Baton's
-compliance check out of the box. Document carve-outs in the forked sim's `CLAUDE.md` only when
-you introduce a deliberate deviation (nested constants, hardcoded interaction fills, etc.).
-
-### `package.json` overrides
-
-JSON cannot carry comments, so the rationale for forced transitive pins lives here. Prefer
-**tilde (`~`) or exact** versions — caret (`^`) lets minors drift under what is meant to be a
-hard pin. Dependabot ignores these three names (see `.github/dependabot.yml`) so it does not
-open PRs that fight the overrides. Revisit when SceneryStack drops or re-pins them upstream.
-
-| Override | Pin | Why |
-|---|---|---|
-| `lodash` | `~4.18.1` | SceneryStack declares `~4.17.12`. Bump clears Dependabot/npm advisories patched in 4.18.x (e.g. GHSA-r5fr-rjxr-66jc, GHSA-f23m-r3pf-42rh). |
-| `three` | `~0.125.2` | SceneryStack declares `^0.104.0`. Floor is 0.125.0 for GHSA-fq6p-x6j3-cmmq (ReDoS). Staying on the 0.125 line avoids a larger API jump; **0.125.x still has open CVEs** (e.g. XSS GHSA-7vvq-7r29-5vg3, fixed only in ≥0.137.0). Remove this override if/when SceneryStack stops depending on `three` or pins a patched line itself. |
-| `brace-expansion` | `~5.0.9` | Transitive via `vite-plugin-pwa` / Workbox. Clears npm audit (originally GHSA-mh99-v99m-4gvg; keep ≥5.0.9 for GHSA-rgw5-rvv9-x895). |
+- **Constants are partly nested.** `FluidPressureAndFlowConstants.ts` holds the
+  cross-cutting SI values, but each pool's and the pipe's geometry lives as
+  documented module constants in its own model file. Pool geometry is meaningless
+  outside the pool that has it, and hoisting it to the root file would separate
+  fourteen numbers from the only code that can explain them. This is the
+  documented "nested constants" variation in Baton CONVENTIONS §2.
+- **The default colour profile is light.** All three screens are an outdoor
+  scene; see `FluidPressureAndFlowColors.ts` for the reasoning. `background_color`
+  in the PWA manifest is correspondingly not black.
 
 ## Testing
 
-Fleet-standard Vitest layout (keep when forking):
-
-| Path | Purpose |
-|---|---|
-| `vitest.config.ts` | `happy-dom` environment; `setupFiles: ["./tests/setup.ts"]`; `execArgv: ["--expose-gc"]` |
-| `tests/setup.ts` | Canvas / AudioContext mocks + `init({ name: "…" })` before SceneryStack imports |
-| `tests/TimeModel.test.ts` | Sample model unit tests — replace with real physics tests |
-| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression (fleet pattern) |
-| `tests/fuzz/fuzz.spec.ts` | Optional Playwright fuzz smoke via joist `?fuzz` |
-| `playwright.config.ts` | Chromium project + Vite webServer for fuzz |
-
-- Put unit tests only under root `tests/`, mirroring `src/` (never co-locate or use `__tests__/`).
-- Change the `name` passed to `init()` in `tests/setup.ts` to match `package.json` after `npm run rename`.
-- Run `npm test`. CI runs the suite when a `test` script is present.
-- Expand `memory-leak.test.ts` for any component that adds/removes nodes or links Properties at
-  runtime (see OpticsLab for a deep suite).
-- Optional: `npm run test:fuzz` / `test:fuzz:quick` / `test:fuzz:long` (not part of default CI).
-  Duration is 30s by default; override with `npm run test:fuzz -- 90` or `FUZZ_DURATION=90`.
-
-## Commands
+`tests/` mirrors `src/`. Several suites encode claims the sim makes to a student
+(shape-independence of pressure, `v ≠ f(ρ)`, constant total head); if one breaks,
+the sim is teaching something false. Don't relax them to make a change pass.
 
 ```bash
 npm run lint && npm run check && npm run build && npm test
+npm run test:fuzz:quick
 ```
 
-| Command | Description |
-|---|---|
-| `npm start` / `npm run dev` | Vite dev server |
-| `npm run build` | Type-check + production build |
-| `npm run build:single` | Single-file build mode |
-| `npm run check` | TypeScript (`tsc --noEmit` + scripts project) |
-| `npm run lint` / `npm run fix` | Biome check / auto-fix |
-| `npm test` | Vitest unit tests |
-| `npm run test:fuzz` | Playwright fuzz smoke (`?fuzz&ea`, 30s; `npm run test:fuzz -- 90` to change) |
-| `npm run test:fuzz:quick` | 10s fuzz |
-| `npm run test:fuzz:long` | 300s fuzz |
-| `npm run icons` | Regenerate PWA icons (+ placeholder screenshots) |
-| `npm run rename` | Sim-level fork/rename (`--id`, `--name`) |
-| `npm run scaffold-screens` | Emit N screens (`--screens Intro,Lab`) |
-| `npm run release` | `check && lint && build`, then version patch + push tags |
+Fleet gate, from the workspace root:
 
-`npm run release` intentionally skips `npm test` — template tests are samples. Real sims should append `&& npm test` before the version bump.
-
-## Customizing a new sim from this template
-
-### Recommended: Baton create-sim
-
-```sh
-Baton/scripts/create-sim.sh --repo Friction --name "Friction" --screens Intro,Lab --shared-model --onboard
+```bash
+bash Baton/scripts/check-repo-compliance.sh FluidPressureAndFlow
 ```
 
-### Manual: GitHub template + rename + scaffold
+## Follow-up work
 
-```sh
-npm install
-npm run rename -- --id friction --name "Friction"
-npm run scaffold-screens -- --screens Intro,Lab --shared-model
-# omit --screens for one screen named after the sim; omit --shared-model for independent models
-npm run fix     # required: both scripts reorder imports, which Biome then sorts
-npm run check
-```
+The upstream issue list is the backlog. Highest-value items, in order:
 
-`rename` updates package id and metadata, display name, and every sim-level `Sim*`
-(Colors, Constants, Namespace, Panel, ButtonOptions, Preferences, query parameters).
-`scaffold-screens` owns screen folders (fleet naming: `src/intro/`, not `intro-screen/`).
-After both steps no `Sim*` identifier should remain — `grep -rn '\bSim[A-Z_]' src` to confirm.
-
-### Manual checklist (if not using the scripts)
-
-1. **Rename** — replace `scenerystack-template` / `SceneryStack Template` / `Sim` prefix in `init.ts`, `brand.ts`, `package.json` (name, description, keywords, repository.url), Colors/Constants/Namespace/Panel/ButtonOptions/Preferences
-2. **Screens** — run `scaffold-screens` or mirror `sim-screen/` into kebab folders
-3. **Locale** — add `strings_XX.json`, register in `StringManager`, add locale to `init.ts` `availableLocales`
-4. **Icon** — edit `public/icons/icon.svg`, run `npm run icons`; match theme color in `index.html` / `vite.config.ts`
-5. **Colors** — edit `*Colors.ts` (`default` + `projector` profiles per property)
-
-## Multi-screen sims
-
-Full guide: [`doc/multi-screen.md`](doc/multi-screen.md)
-
-Summary:
-- Prefer `npm run scaffold-screens -- --screens Intro,Lab` (add `--shared-model` for a root model)
-- Or create a screen folder mirroring `src/sim-screen/` for each screen (kebab names, no `-screen` suffix)
-- Add screen-name keys to all locale JSON files; nest `a11y` per screen
-- Expose new getters in `StringManager.getScreenNames()` / `get{Screen}A11yStrings()`
-- Shared state: `--shared-model` → `common/model/SharedModel.ts` composed per screen (rename to a domain type)
-- Add `src/common/{SimName}ScreenIcons.ts` with `create{Screen}Icon()` factories; wire `homeScreenIcon` + `navigationBarIcon` on each Screen
-- Register all screens in the `screens` array in `main.ts`
-
-## Using this template beyond a direct copy
-
-| Approach | When to use |
-|---|---|
-| **`Baton/scripts/create-sim.sh`** | Agents / fleet — create repo, rename, scaffold N screens |
-| **GitHub template** ("Use this template") | Humans starting a sim in the browser |
-| `npm run rename` + `scaffold-screens` | Same, after cloning the template |
-| **npm workspace / monorepo** | Managing a suite of sims with shared tooling |
-| **git subtree** for pulling updates | Keeping forks in sync with template improvements |
-
-See `doc/multi-screen.md` → "Using this template beyond a direct copy" for details.
-
-## PWA
-
-After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).
+1. **[#314](https://github.com/phetsims/fluid-pressure-and-flow/issues/314)** —
+   friction should produce a pressure drop (Hagen–Poiseuille), not just a
+   velocity profile. The most substantive physics complaint against the original.
+2. **[#199](https://github.com/phetsims/fluid-pressure-and-flow/issues/199)** —
+   negative Bernoulli pressure; currently clamped at 0.
+3. **[#322](https://github.com/phetsims/fluid-pressure-and-flow/issues/322)** —
+   the barometer reads air pressure inside the hose.
+4. **[#327](https://github.com/phetsims/fluid-pressure-and-flow/issues/327)** —
+   water/sky contrast for colour-blind viewers. All colours are already in
+   `FluidPressureAndFlowColors.ts`, so this is a one-file change.

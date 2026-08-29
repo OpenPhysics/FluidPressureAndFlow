@@ -1,21 +1,176 @@
 {
-  "title": "Plantilla de Simulación",
+  "title": "Presión y flujo de fluidos",
   "screens": {
-    "sim": "Sim"
+    "underPressure": "Bajo presión",
+    "flow": "Flujo",
+    "waterTower": "Depósito de agua"
+  },
+  "common": {
+    "units": "Unidades",
+    "metric": "Métrico",
+    "atmospheres": "Atmósferas",
+    "english": "Inglés",
+    "unitLabels": {
+      "metric": {
+        "pressure": "kPa",
+        "distance": "m",
+        "velocity": "m/s",
+        "density": "kg/m³",
+        "gravity": "m/s²",
+        "flowRate": "L/s",
+        "flux": "L/(m²·s)",
+        "area": "m²"
+      },
+      "atmospheres": {
+        "pressure": "atm",
+        "distance": "m",
+        "velocity": "m/s",
+        "density": "kg/m³",
+        "gravity": "m/s²",
+        "flowRate": "L/s",
+        "flux": "L/(m²·s)",
+        "area": "m²"
+      },
+      "english": {
+        "pressure": "psi",
+        "distance": "ft",
+        "velocity": "ft/s",
+        "density": "lb/ft³",
+        "gravity": "ft/s²",
+        "flowRate": "ft³/s",
+        "flux": "ft³/(ft²·s)",
+        "area": "ft²"
+      }
+    },
+    "fluidDensity": "Densidad del fluido",
+    "gasoline": "gasolina",
+    "water": "agua",
+    "honey": "miel",
+    "gravity": "Gravedad",
+    "low": "baja",
+    "earth": "Tierra",
+    "high": "alta",
+    "ruler": "Regla",
+    "grid": "Cuadrícula",
+    "measuringTape": "Cinta métrica",
+    "atmosphere": "Atmósfera",
+    "on": "Encendida",
+    "off": "Apagada",
+    "pressure": "Presión",
+    "speed": "Rapidez",
+    "valueWithUnitsPattern": "{{value}} {{units}}",
+    "unknownValue": "—",
+    "slowMotion": "Cámara lenta",
+    "normal": "Normal",
+    "open": "abierto",
+    "closed": "cerrado"
+  },
+  "underPressure": {
+    "scenes": {
+      "square": "Piscina rectangular",
+      "trapezoid": "Piscina trapezoidal",
+      "chamber": "Piscina de cámaras",
+      "mystery": "Piscina misteriosa"
+    },
+    "mysteryFluid": "Fluido misterioso",
+    "mysteryPlanet": "Planeta misterioso",
+    "fluidA": "Fluido A",
+    "fluidB": "Fluido B",
+    "fluidC": "Fluido C",
+    "planetA": "Planeta A",
+    "planetB": "Planeta B",
+    "planetC": "Planeta C",
+    "massLabelPattern": "{{mass}} kg"
+  },
+  "flow": {
+    "flowRate": "Caudal",
+    "friction": "Fricción",
+    "fluxMeter": "Medidor de flujo",
+    "dots": "Puntos",
+    "area": "Área",
+    "flux": "Flujo"
+  },
+  "waterTower": {
+    "manual": "Manual",
+    "matchLeakage": "Igualar la fuga",
+    "hose": "Manguera",
+    "fill": "Llenar"
   },
   "a11y": {
-    "screenSummary": {
-      "playArea": "El área de juego muestra el contenido principal de la simulación.",
-      "controlArea": "El área de control tiene un botón Restablecer todo que devuelve la simulación a su estado inicial.",
-      "interactionHint": "Explora la simulación interactuando con sus controles."
+    "underPressure": {
+      "screenSummary": {
+        "playArea": "Una escena al aire libre con una piscina hundida en el suelo. El cielo y el aire están por encima de la línea del suelo; la tierra y la piscina, por debajo. Los barómetros pueden colocarse en cualquier punto para leer la presión allí.",
+        "controlArea": "Controles para la forma de la piscina, la atmósfera, las unidades de cada lectura, el fluido de la piscina, la intensidad de la gravedad y un botón de Reiniciar todo.",
+        "interactionHint": "Elige una piscina, arrastra un barómetro al agua y muévelo hacia arriba y hacia abajo para ver cómo cambia la presión con la profundidad."
+      },
+      "currentDetails": "Se muestra la {{scene}}. Hay {{placed}} de {{total}} barómetros colocados. La atmósfera está {{atmosphere}}.",
+      "controls": {
+        "sceneChooser": "Forma de la piscina",
+        "atmosphereControl": "Atmósfera",
+        "unitsControl": "Unidades",
+        "rulerCheckbox": "Regla",
+        "gridCheckbox": "Cuadrícula",
+        "fluidDensitySlider": "Densidad del fluido",
+        "gravitySlider": "Gravedad",
+        "inputFaucet": "Grifo de llenado",
+        "drainFaucet": "Grifo de desagüe",
+        "barometer": "Barómetro",
+        "ruler": "Regla",
+        "mass": "Pesa",
+        "mysteryChooser": "Elección misteriosa"
+      }
     },
-    "currentDetails": "La simulación está en su estado inicial.",
-    "controls": {
-      "exampleControl": "Control de ejemplo"
+    "flow": {
+      "screenSummary": {
+        "playArea": "Una tubería que recorre la pantalla de izquierda a derecha bajo el suelo y transporta fluido desde una fuente situada fuera de la pantalla. Unos tiradores en la pared de la tubería cambian su forma; los puntos arrastrados por el fluido muestran su rapidez.",
+        "controlArea": "Controles para el caudal, la fricción con la pared, el medidor de flujo, los puntos marcadores, la regla, las unidades de cada lectura, el fluido de la tubería, la velocidad de reproducción y un botón de Reiniciar todo.",
+        "interactionHint": "Arrastra un tirador de la tubería para estrecharla y observa los puntos y el barómetro para ver qué ocurre con la rapidez y con la presión."
+      },
+      "currentDetails": "El fluido circula a {{flowRate}}. Hay {{placed}} de {{total}} sensores colocados.",
+      "controls": {
+        "flowRateSlider": "Caudal",
+        "frictionCheckbox": "Fricción",
+        "fluxMeterCheckbox": "Medidor de flujo",
+        "dotsCheckbox": "Puntos",
+        "rulerCheckbox": "Regla",
+        "unitsControl": "Unidades",
+        "fluidDensitySlider": "Densidad del fluido",
+        "barometer": "Barómetro",
+        "speedometer": "Velocímetro",
+        "ruler": "Regla",
+        "pipeHandle": "Tirador de la tubería",
+        "gridInjector": "Inyectar cuadrícula de puntos",
+        "fluxMeter": "Medidor de flujo"
+      }
+    },
+    "waterTower": {
+      "screenSummary": {
+        "playArea": "Un depósito de agua elevado sobre el suelo, con un grifo encima y un orificio cerca de su base. El agua que sale del orificio cae como un chorro que se puede medir.",
+        "controlArea": "Controles para el grifo, la manguera, la regla, la cinta métrica, las unidades de cada lectura, el fluido del depósito, la velocidad de reproducción y un botón de Reiniciar todo.",
+        "interactionHint": "Abre el orificio de la base del depósito y luego súbelo y bájalo para ver cómo la altura del agua cambia la rapidez del chorro."
+      },
+      "currentDetails": "El depósito está lleno al {{fill}} por ciento y el orificio de su base está {{hole}}.",
+      "controls": {
+        "faucetModeControl": "Modo del grifo",
+        "fillButton": "Llenar el depósito",
+        "hoseCheckbox": "Manguera",
+        "rulerCheckbox": "Regla",
+        "measuringTapeCheckbox": "Cinta métrica",
+        "unitsControl": "Unidades",
+        "fluidDensitySlider": "Densidad del fluido",
+        "barometer": "Barómetro",
+        "speedometer": "Velocímetro",
+        "ruler": "Regla",
+        "measuringTape": "Cinta métrica",
+        "sluiceControl": "Tapa del orificio",
+        "tankHandle": "Altura del depósito",
+        "hoseAngleHandle": "Ángulo de la manguera"
+      }
     }
   },
   "preferences": {
     "title": "Simulación",
-    "exampleToggle": "Ejemplo de alternancia"
+    "linkUnits": "Igualar las unidades en todas las pantallas",
+    "linkUnitsDescription": "Cuando está activado, elegir un sistema de unidades en una pantalla lo aplica a las tres."
   }
 }
