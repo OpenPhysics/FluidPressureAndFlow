@@ -31,8 +31,20 @@ const MAIN_HANDLE_TOUCH_X_EXPAND = 30;
 /** Extra touch height below a main handle. */
 const MAIN_HANDLE_TOUCH_Y_EXPAND = 60;
 
-/** Extra touch width on each side of a middle handle. */
-const MIDDLE_HANDLE_TOUCH_X_EXPAND = 30;
+/** Extra touch width on each side of a middle or rim handle. */
+const VERTICAL_HANDLE_TOUCH_X_EXPAND = 30;
+
+/** Extra touch height below a top vertical handle, which has no room to grow upward. */
+const TOP_HANDLE_TOUCH_BOTTOM_EXPAND = 40;
+
+/** Extra touch height above a bottom vertical handle. */
+const BOTTOM_HANDLE_TOUCH_TOP_EXPAND = 30;
+
+/** Extra touch height below a bottom vertical handle. */
+const BOTTOM_HANDLE_TOUCH_BOTTOM_EXPAND = 60;
+
+/** Extra touch height below the main handle's image, beyond MAIN_HANDLE_TOUCH_Y_EXPAND. */
+const MAIN_HANDLE_TOUCH_TOP_INSET = 25;
 
 /** View-pixel gap between a pipe-head rim and its rim handle. */
 const RIM_HANDLE_OFFSET = 2;
@@ -161,11 +173,28 @@ function createMainHandleImage(): Image {
   const bounds = handle.localBounds;
   handle.touchArea = new Bounds2(
     bounds.minX - MAIN_HANDLE_TOUCH_X_EXPAND,
-    bounds.minY + 25,
+    bounds.minY + MAIN_HANDLE_TOUCH_TOP_INSET,
     bounds.maxX + MAIN_HANDLE_TOUCH_X_EXPAND,
     bounds.maxY + MAIN_HANDLE_TOUCH_Y_EXPAND,
   );
   return handle;
+}
+
+/** Touch area for a vertical (middle or rim) handle, wider than the bitmap and biased toward its free side. */
+function createVerticalHandleTouchArea(image: Image, isTop: boolean): Bounds2 {
+  return isTop
+    ? new Bounds2(
+        image.localBounds.minX - VERTICAL_HANDLE_TOUCH_X_EXPAND,
+        image.localBounds.minY,
+        image.localBounds.maxX + VERTICAL_HANDLE_TOUCH_X_EXPAND,
+        image.localBounds.maxY + TOP_HANDLE_TOUCH_BOTTOM_EXPAND,
+      )
+    : new Bounds2(
+        image.localBounds.minX - VERTICAL_HANDLE_TOUCH_X_EXPAND,
+        image.localBounds.minY + BOTTOM_HANDLE_TOUCH_TOP_EXPAND,
+        image.localBounds.maxX + VERTICAL_HANDLE_TOUCH_X_EXPAND,
+        image.localBounds.maxY + BOTTOM_HANDLE_TOUCH_BOTTOM_EXPAND,
+      );
 }
 
 /**
@@ -266,19 +295,7 @@ function createMiddleHandle(
   },
 ): Node {
   const image = createHandleImage(config.moved.value);
-  image.touchArea = config.isTop
-    ? new Bounds2(
-        image.localBounds.minX - MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.minY,
-        image.localBounds.maxX + MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.maxY + 40,
-      )
-    : new Bounds2(
-        image.localBounds.minX - MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.minY + 30,
-        image.localBounds.maxX + MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.maxY + 60,
-      );
+  image.touchArea = createVerticalHandleTouchArea(image, config.isTop);
 
   const wrapper = new Node({
     children: [image],
@@ -313,19 +330,7 @@ function createRimHandle(
   },
 ): Node {
   const image = createHandleImage(config.moved.value);
-  image.touchArea = config.isTop
-    ? new Bounds2(
-        image.localBounds.minX - MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.minY,
-        image.localBounds.maxX + MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.maxY + 40,
-      )
-    : new Bounds2(
-        image.localBounds.minX - MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.minY + 30,
-        image.localBounds.maxX + MIDDLE_HANDLE_TOUCH_X_EXPAND,
-        image.localBounds.maxY + 60,
-      );
+  image.touchArea = createVerticalHandleTouchArea(image, config.isTop);
 
   const wrapper = new Node({
     children: [image],
