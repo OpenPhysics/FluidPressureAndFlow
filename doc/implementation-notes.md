@@ -120,8 +120,17 @@ accumulator does not.
 
 ## Deliberate departures from upstream
 
-- **Fleet-default `layoutBounds`**, not upstream's legacy 768 × 504. Upstream
-  kept those only for PhET-iO back-compatibility, which does not apply here.
+- **Fleet-default `layoutBounds`** (1024 × 618), not upstream's legacy 768 × 504.
+  Upstream kept those only for PhET-iO back-compatibility, which does not apply
+  here. Every view-pixel constant was recalibrated for the larger frame; because
+  the new aspect ratio is wider (1.66 vs 1.52), no single factor served all three
+  screens. Under Pressure and Water Tower are limited by height and scale by
+  618/504, spending the extra width on clearance around the right-hand control
+  column. Flow is limited by width and scales by 1024/768, because its bitmap
+  pipe heads are pinned to the layout edges while the spline middle spans a fixed
+  model range — at the old 50 px/m the spline would stop short of the right head.
+  Chrome deliberately did **not** scale: panel content widths, instrument bodies
+  and gauge radii are unchanged, so the play area gained room at chrome's expense.
 - **Vector artwork throughout.** No raster assets: `kite` shapes, gradients, and
   scenery-phet's `FaucetNode`, `MeasuringTapeNode`, `RulerNode`, `GaugeNode` and
   `TimeControlNode`. This also closes upstream

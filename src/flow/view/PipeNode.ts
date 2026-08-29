@@ -23,7 +23,7 @@ import { getPipeEndLayout, LEFT_PIPE_X, PIPE_HEAD_X_SCALE, RIGHT_PIPE_LAYOUT_INS
 /** Brown stroke around the flexible middle section, from the PhET artwork. */
 const MIDDLE_WALL_COLOR = "#613705";
 
-const MIDDLE_WALL_LINE_WIDTH = 6;
+const MIDDLE_WALL_LINE_WIDTH = 8;
 
 /** Model x-range of the spline middle; overlaps the bitmap heads slightly. */
 const MIDDLE_MIN_X = -6.7;
@@ -32,10 +32,13 @@ const MIDDLE_MAX_X = 6.7;
 /** Horizontal stretch of the repeating pipe-segment bitmap off-screen. */
 const PIPE_SEGMENT_X_SCALE = 100;
 
-/** Gap between the left head and the repeating segment, view pixels. */
+/**
+ * Gap between the left head and the repeating segment, in unscaled bitmap
+ * pixels: both live inside the head assembly, which is scaled as a whole.
+ */
 const LEFT_SEGMENT_GAP = 30;
 
-/** Overlap between the right head and the repeating segment, view pixels. */
+/** Overlap between the right head and the repeating segment, same frame as above. */
 const RIGHT_SEGMENT_OVERLAP = 50;
 
 export class PipeNode extends Node {

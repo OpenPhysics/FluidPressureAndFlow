@@ -128,9 +128,13 @@ export class FPAFRulerNode extends Node {
 
     const dragBoundsProperty = new Property(dragBounds);
 
+    // `useParentOffset` measures the grab offset against positionProperty through the
+    // transform. Without it the listener would measure against this node's origin,
+    // which the rotation above leaves at the far corner of the ruler.
     const dragListener = new DragListener({
       positionProperty: positionProperty,
       transform: modelViewTransform,
+      useParentOffset: true,
       dragBoundsProperty: dragBoundsProperty,
       start: () => this.moveToFront(),
     });

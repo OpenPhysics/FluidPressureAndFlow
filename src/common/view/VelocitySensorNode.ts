@@ -57,7 +57,12 @@ export type VelocitySensorNodeOptions = {
 
 export class VelocitySensorNode extends Node {
   private readonly disposeVelocitySensorNode: () => void;
+
+  /** All set in the constructor; used by {@link grabFromToolbox}. */
   private readonly dragListener: DragListener;
+  private readonly positionProperty: Property<Vector2>;
+  private readonly modelViewTransform: ModelViewTransform2;
+  private readonly dragBounds: Bounds2;
 
   public constructor(
     sensor: VelocitySensor,
@@ -111,8 +116,18 @@ export class VelocitySensorNode extends Node {
       },
     );
 
-    // Drawn from the sampling point, so it reads as the flow at the probe rather
-    // than as a property of the instrument body.
+    this.children = [tip, body, label, readoutBackground, readoutText];
+
+    // Same tip-at-origin layout as BarometerNode, so setting `translation` below puts
+    // the sampling point itself on the model position.
+    const tipAnchor = tip.centerBottom;
+    for (const child of this.children) {
+      child.translate(-tipAnchor.x, -tipAnchor.y);
+    }
+
+    // Added after the shift and left untranslated, so its tail sits on the origin —
+    // the sampling point — and it reads as the flow at the probe rather than as a
+    // property of the instrument body. Behind the body so it never covers the digits.
     const arrow = new ArrowNode(0, 0, 0, 0, {
       fill: FluidPressureAndFlowColors.accentColorProperty,
       stroke: FluidPressureAndFlowColors.gaugeRimColorProperty,
@@ -120,35 +135,31 @@ export class VelocitySensorNode extends Node {
       headWidth: 12,
       tailWidth: 5,
     });
+    this.insertChild(0, arrow);
 
-    this.children = [arrow, tip, body, label, readoutBackground, readoutText];
+    this.positionProperty = sensor.positionProperty;
+    this.modelViewTransform = modelViewTransform;
+    this.dragBounds = options.dragBounds;
 
-    const tipOffset = tip.centerBottom.minus(body.leftTop);
+    const updatePosition = (position: Vector2) => {
+      this.translation = modelViewTransform.modelToViewPosition(position);
+    };
+    sensor.positionProperty.link(updatePosition);
 
-    const layout = () => {
-      const viewPosition = modelViewTransform.modelToViewPosition(sensor.positionProperty.value);
-      body.leftTop = viewPosition.minus(tipOffset);
-      label.centerX = body.centerX;
-      label.top = body.top + 3;
-      readoutBackground.centerX = body.centerX;
-      readoutBackground.bottom = body.bottom - 4;
-      centerReadout();
-      tip.top = body.bottom - 1;
-      tip.centerX = body.centerX;
-
+    const updateArrow = () => {
       const velocity = sensor.valueProperty.value;
       arrow.visible = velocity !== null && velocity.magnitude > 0;
       if (velocity && velocity.magnitude > 0) {
         const length = Math.min(MAX_ARROW_LENGTH, velocity.magnitude * ARROW_SCALE);
         const direction = velocity.normalized();
-        arrow.setTail(viewPosition.x, viewPosition.y);
+        arrow.setTail(0, 0);
         // The view's y runs the other way from the model's, so the arrow's
         // vertical component is negated to point where the fluid actually goes.
-        arrow.setTip(viewPosition.x + direction.x * length, viewPosition.y - direction.y * length);
+        arrow.setTip(direction.x * length, -direction.y * length);
       }
     };
-    sensor.positionProperty.link(layout);
-    sensor.valueProperty.link(layout);
+    sensor.valueProperty.link(updateArrow);
+    updateArrow();
 
     const dragBoundsProperty = new Property(options.dragBounds);
 
@@ -160,9 +171,12 @@ export class VelocitySensorNode extends Node {
       }
     };
 
+    // See BarometerNode: the grab offset is measured against positionProperty, not
+    // against this node's origin.
     this.dragListener = new DragListener({
       positionProperty: sensor.positionProperty,
       transform: modelViewTransform,
+      useParentOffset: true,
       dragBoundsProperty: dragBoundsProperty,
       start: () => this.moveToFront(),
       end: endDrag,
@@ -186,8 +200,8 @@ export class VelocitySensorNode extends Node {
     sensor.isActiveProperty.link(updateVisibility);
 
     this.disposeVelocitySensorNode = () => {
-      sensor.positionProperty.unlink(layout);
-      sensor.valueProperty.unlink(layout);
+      sensor.positionProperty.unlink(updatePosition);
+      sensor.valueProperty.unlink(updateArrow);
       sensor.isActiveProperty.unlink(updateVisibility);
       speedTextProperty.unlink(centerReadout);
       this.dragListener.dispose();
@@ -198,6 +212,9 @@ export class VelocitySensorNode extends Node {
   /** Takes over a press that began on the toolbox. See BarometerNode.grabFromToolbox. */
   public grabFromToolbox(event: PressListenerEvent): void {
     this.moveToFront();
+    this.positionProperty.value = this.dragBounds.closestPointTo(
+      this.modelViewTransform.viewToModelPosition(this.globalToParentPoint(event.pointer.point)),
+    );
     this.dragListener.press(event, this);
   }
 

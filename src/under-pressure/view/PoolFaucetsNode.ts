@@ -36,14 +36,14 @@ const SUPPLY_PIPE_LENGTH = 900;
  * *into* the pool, drawing a pipe across the water the student is measuring.
  */
 // FaucetNode needs enough room for its 112px spout offset. At the displayed
-// 0.5 scale this remains a compact, 60px drain-pipe stub.
+// scale this remains a compact, 73px drain-pipe stub.
 const DRAIN_PIPE_LENGTH = 120;
 
 /** How wide the falling column of water is drawn, view pixels. */
-const STREAM_WIDTH = 12;
+const STREAM_WIDTH = 15;
 
 /** Scale applied to the whole faucet assembly, to fit the pool. */
-const FAUCET_SCALE = 0.5;
+const FAUCET_SCALE = 0.61;
 
 export type PoolFaucetsNodeOptions = {
   /** Model x the fill tap pours into. */
@@ -78,8 +78,8 @@ export class PoolFaucetsNode extends Node {
       accessibleName: options.inputAccessibleName,
     });
     const inputSpoutX = modelViewTransform.modelToViewX(options.inputFaucetX);
-    inputFaucet.right = inputSpoutX + 20;
-    inputFaucet.bottom = modelViewTransform.modelToViewY(0) - 26;
+    inputFaucet.right = inputSpoutX + 25;
+    inputFaucet.bottom = modelViewTransform.modelToViewY(0) - 32;
 
     // The column from the spout down to the water surface, so it always lands on
     // the water rather than passing through it or stopping short.
@@ -111,11 +111,11 @@ export class PoolFaucetsNode extends Node {
     // FaucetNode draws its supply pipe to the left of the spout, so anchoring by
     // the node's right edge is what puts the spout where it was asked to go.
     const drainSpoutX = modelViewTransform.modelToViewX(options.drainFaucetX);
-    drainFaucet.right = drainSpoutX + 20;
+    drainFaucet.right = drainSpoutX + 25;
     // Anchored by its spout just under the pool floor, so the drain reads as taking
     // water from the bottom of the pool however deep the pool is drawn — and so the
     // assembly cannot run off the bottom of the screen.
-    drainFaucet.bottom = modelViewTransform.modelToViewY(-MAX_POOL_HEIGHT) + 30;
+    drainFaucet.bottom = modelViewTransform.modelToViewY(-MAX_POOL_HEIGHT) + 37;
 
     // Water leaving the drain runs off the bottom of the screen; the column is
     // drawn long enough to reach it from wherever the pool floor sits.
@@ -126,7 +126,7 @@ export class PoolFaucetsNode extends Node {
       if (flowRate <= 0) {
         return;
       }
-      drainStream.setRect(0, 0, STREAM_WIDTH * flowRate, 400);
+      drainStream.setRect(0, 0, STREAM_WIDTH * flowRate, 490);
       drainStream.centerX = drainSpoutX;
       drainStream.top = drainFaucet.bottom - 2;
     });

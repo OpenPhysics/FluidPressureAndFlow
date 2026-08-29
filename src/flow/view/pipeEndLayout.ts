@@ -10,23 +10,31 @@
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import type { PipeCrossSection } from "../model/PipeCrossSection.js";
 
-/** Horizontal scale applied to every pipe-head bitmap. */
-export const PIPE_HEAD_X_SCALE = 0.36;
+/**
+ * Horizontal scale applied to every pipe-head bitmap. Tracks FLOW_VIEW_SCALE:
+ * the head has to be as tall as the pipe mouth it caps, and the mouth's height
+ * in view pixels is its height in metres times that scale.
+ */
+export const PIPE_HEAD_X_SCALE = 0.48;
 
 /** Reference cross-section height used to compute the vertical head scale (PhET: 2.1 m). */
 export const PIPE_REFERENCE_HEIGHT = 2.1;
 
 /** Smallest allowed vertical scale for a pipe head. */
-export const MIN_PIPE_HEAD_SCALE = 0.18;
+export const MIN_PIPE_HEAD_SCALE = 0.24;
 
-/** View-pixel offset from the top control point to the pipe-head node origin. */
+/**
+ * Offset from the top control point to the pipe-head node origin, in unscaled
+ * bitmap pixels — it is multiplied by the head's own scale below, so it does not
+ * move with the layout bounds.
+ */
 export const LEFT_PIPE_Y_OFFSET = 30;
 
 /** View x of the left pipe-head assembly. */
-export const LEFT_PIPE_X = -49;
+export const LEFT_PIPE_X = -65;
 
 /** Inset of the right pipe head from the layout right edge, view pixels. */
-export const RIGHT_PIPE_LAYOUT_INSET = 75;
+export const RIGHT_PIPE_LAYOUT_INSET = 100;
 
 export type PipeEndLayout = {
   readonly scaleY: number;

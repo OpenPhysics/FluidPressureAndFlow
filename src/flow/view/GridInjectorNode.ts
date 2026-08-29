@@ -20,18 +20,25 @@ import { injectorBulbImage } from "../../common/view/images.js";
 import type { Pipe } from "../model/Pipe.js";
 
 /** Radius of the plunger head, view pixels. */
-const PLUNGER_RADIUS = 25;
+const PLUNGER_RADIUS = 33;
 
 /** Model x where the injector sits, from the HTML5 reference. */
 const INJECTOR_MODEL_X = -6;
 
 /** View-pixel offset from the pipe mouth to the bulb artwork. */
-const INJECTOR_X_OFFSET = 50;
+const INJECTOR_X_OFFSET = 67;
 
-/** View-pixel offset above the pipe ceiling to the bulb artwork. */
-const INJECTOR_Y_OFFSET = 150;
+/**
+ * View-pixel offset above the pipe ceiling to the bulb artwork. Has to match the
+ * height of the scaled bulb, whose tube reaches down to the mouth, so it moves
+ * with BULB_SCALE.
+ */
+const INJECTOR_Y_OFFSET = 200;
 
-const BULB_SCALE = 0.35;
+const BULB_SCALE = 0.47;
+
+/** View-pixel drop from the top of the bulb to the plunger it houses. */
+const PLUNGER_Y_OFFSET = 41;
 
 export class GridInjectorNode extends Node {
   private readonly disposeGridInjectorNode: () => void;
@@ -57,7 +64,7 @@ export class GridInjectorNode extends Node {
       stroke: "red",
       accessibleName: accessibleName,
       centerX: bulb.centerX,
-      top: bulb.top + 31,
+      top: bulb.top + PLUNGER_Y_OFFSET,
       touchAreaDilation: 10,
     });
 

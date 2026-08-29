@@ -27,10 +27,10 @@ import { LinearGradient, Node, Path, Rectangle } from "scenerystack/scenery";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 
 /** Thickness of the grass strip, in view pixels. */
-const GRASS_HEIGHT = 10;
+const GRASS_HEIGHT = 12;
 
 /** Thickness of the darker band along the bottom of the grass. */
-const GRASS_SHADOW_HEIGHT = 3;
+const GRASS_SHADOW_HEIGHT = 4;
 
 /**
  * Height of the sky's gradient, in view pixels, measured up from the ground line.
@@ -40,13 +40,13 @@ const GRASS_SHADOW_HEIGHT = 3;
  * at the top depend on how tall the window is, so the same sim would be a
  * different colour on two machines.
  */
-const SKY_GRADIENT_HEIGHT = 200;
+const SKY_GRADIENT_HEIGHT = 245;
 
 /** Depth, in view pixels, over which earth darkens to its full colour. */
-const EARTH_GRADIENT_DEPTH = 400;
+const EARTH_GRADIENT_DEPTH = 490;
 
 /** Depth over which turf darkens. Shallow: a lawn is not a cross-section. */
-const TURF_GRADIENT_DEPTH = 50;
+const TURF_GRADIENT_DEPTH = 61;
 
 /** Which ground a screen stands on. See the file comment. */
 export type GroundStyle = "earth" | "turf";

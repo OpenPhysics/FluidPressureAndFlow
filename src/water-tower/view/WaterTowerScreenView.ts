@@ -49,13 +49,16 @@ import { WaterTowerScreenSummaryContent } from "./WaterTowerScreenSummaryContent
  * the faucet still above it and still on screen. The jet's horizontal range fits
  * comfortably at the same scale.
  */
-const VIEW_SCALE = 10;
+const VIEW_SCALE = 12;
 
 /** View y of the ground line (model y = 0). */
-const GROUND_VIEW_Y = 350;
+const GROUND_VIEW_Y = 429;
 
 /** Model x that lands at the left of the play area. */
 const MODEL_LEFT_X = -6;
+
+/** View x of {@link MODEL_LEFT_X}, measured in from the left edge. */
+const MODEL_LEFT_VIEW_INSET = 49;
 
 /** Length of the draggable ruler, metres. */
 const RULER_LENGTH = 20;
@@ -86,7 +89,7 @@ export class WaterTowerScreenView extends ScreenView {
 
     const modelViewTransform = ModelViewTransform2.createSinglePointScaleInvertedYMapping(
       new Vector2(MODEL_LEFT_X, 0),
-      new Vector2(this.layoutBounds.minX + 40, GROUND_VIEW_Y),
+      new Vector2(this.layoutBounds.minX + MODEL_LEFT_VIEW_INSET, GROUND_VIEW_Y),
       VIEW_SCALE,
     );
 
@@ -135,11 +138,11 @@ export class WaterTowerScreenView extends ScreenView {
       // Small enough that the whole assembly fits between the top of the screen
       // and the spout: the spout is pinned to FAUCET_POSITION, which is only just
       // above the tank's highest reach, so the body has to hang in what is left.
-      scale: 0.35,
+      scale: 0.43,
       closeOnRelease: false,
       accessibleName: a11y.controls.faucetModeControlStringProperty,
     });
-    faucet.right = modelViewTransform.modelToViewX(FAUCET_POSITION.x) + 30;
+    faucet.right = modelViewTransform.modelToViewX(FAUCET_POSITION.x) + 37;
     faucet.bottom = modelViewTransform.modelToViewY(FAUCET_POSITION.y);
     this.addChild(faucet);
 
@@ -150,7 +153,7 @@ export class WaterTowerScreenView extends ScreenView {
       modelViewTransform.viewToModelX(this.layoutBounds.maxX - 10),
       modelViewTransform.viewToModelY(this.layoutBounds.minY + 10),
     );
-    const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.minX + 140), 24);
+    const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.minX + 172), 24);
 
     const sensorLayer = new Node();
     this.addChild(sensorLayer);
@@ -254,7 +257,7 @@ export class WaterTowerScreenView extends ScreenView {
       a11y.controls.fillButtonStringProperty,
     );
     // Beside the faucet it controls, in the top-left corner.
-    faucetControls.left = this.layoutBounds.minX + 150;
+    faucetControls.left = this.layoutBounds.minX + 184;
     faucetControls.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(faucetControls);
 

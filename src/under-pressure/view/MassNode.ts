@@ -81,9 +81,13 @@ export class MassNode extends Node {
       onRelease();
     };
 
+    // `useParentOffset` measures the grab offset against positionProperty through the
+    // transform, so the block keeps the grip the student took it by. Measured against
+    // this node's origin instead, it would jump by half its width and all its height.
     const dragListener = new DragListener({
       positionProperty: mass.positionProperty,
       transform: modelViewTransform,
+      useParentOffset: true,
       dragBoundsProperty: dragBoundsProperty,
       start: startDrag,
       end: endDrag,

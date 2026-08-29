@@ -15,14 +15,14 @@ import { MAX_PIPE_Y, MIN_PIPE_HEIGHT, MIN_PIPE_Y, type Pipe } from "../model/Pip
 import type { PipeCrossSection } from "../model/PipeCrossSection.js";
 import type { PipeNode } from "./PipeNode.js";
 
-/** Scale applied to every handle bitmap. */
-const HANDLE_IMAGE_SCALE = 0.32;
+/** Scale applied to every handle bitmap, tracking the pipe artwork it sits on. */
+const HANDLE_IMAGE_SCALE = 0.43;
 
 /** Horizontal inset of the left main drag handle from the layout edge. */
-const LEFT_MAIN_HANDLE_INSET = 10;
+const LEFT_MAIN_HANDLE_INSET = 13;
 
 /** Horizontal inset of the right main drag handle from the layout edge. */
-const RIGHT_MAIN_HANDLE_INSET = 50;
+const RIGHT_MAIN_HANDLE_INSET = 67;
 
 /** Extra touch width on each side of a main handle. */
 const MAIN_HANDLE_TOUCH_X_EXPAND = 30;
@@ -41,6 +41,14 @@ const KEYBOARD_DRAG_SPEED = 1.5;
 
 /** Model y below which a top handle image is not flipped. */
 const HANDLE_FLIP_Y_THRESHOLD = -2;
+
+/**
+ * Where the handle bitmap sits relative to its wrapper, unflipped and flipped.
+ * Rotating the bitmap by π moves its bar to the other side, and these put the bar
+ * back over the cross-section; the pair therefore scales with HANDLE_IMAGE_SCALE.
+ */
+const HANDLE_IMAGE_LEFT = -17;
+const HANDLE_IMAGE_LEFT_FLIPPED = 26;
 
 export type PipeHandlesNodeOptions = {
   readonly layoutBounds: Bounds2;
@@ -159,6 +167,11 @@ function createMainHandleImage(): Image {
   return handle;
 }
 
+/**
+ * The main handle moves a whole end cross-section without changing its height, so
+ * the drag is expressed as the cross-section's centre in model coordinates and the
+ * two walls are carried along at their existing separation.
+ */
 function createMainDragListener(
   handle: Image,
   section: PipeCrossSection,
@@ -166,31 +179,69 @@ function createMainDragListener(
   modelViewTransform: ModelViewTransform2,
   disposers: Array<() => void>,
 ): void {
-  let initialTopY = 0;
-  let initialBottomY = 0;
+  const centerY = () => (section.topYProperty.value + section.bottomYProperty.value) / 2;
+  const halfHeight = () => (section.topYProperty.value - section.bottomYProperty.value) / 2;
+
+  // The centre is clamped rather than each wall, so a section driven into the top or
+  // bottom of the pipe's range stops there instead of being squashed against it.
+  const constrain = (point: Vector2): Vector2 => {
+    const half = halfHeight();
+    return new Vector2(section.x, Math.max(MIN_PIPE_Y + half, Math.min(MAX_PIPE_Y - half, point.y)));
+  };
+
+  const dragPositionProperty = new Property(new Vector2(section.x, centerY()));
+  let isSyncing = false;
+
+  const syncToModel = (point: Vector2) => {
+    if (isSyncing) {
+      return;
+    }
+    isSyncing = true;
+    const half = halfHeight();
+    // Written in the direction of travel, so the half-updated state in between never
+    // has the walls closer together than the middle handles will allow.
+    if (point.y > centerY()) {
+      section.topYProperty.value = point.y + half;
+      section.bottomYProperty.value = point.y - half;
+    } else {
+      section.bottomYProperty.value = point.y - half;
+      section.topYProperty.value = point.y + half;
+    }
+    handle.centerY = pipeHeadNode.centerY;
+    isSyncing = false;
+  };
+  dragPositionProperty.link(syncToModel);
+
+  // The section also moves when its own rim handles are dragged, and the drag offset
+  // is measured from this property, so it has to follow those too.
+  const syncFromModel = () => {
+    if (isSyncing) {
+      return;
+    }
+    isSyncing = true;
+    dragPositionProperty.value = new Vector2(section.x, centerY());
+    isSyncing = false;
+  };
+  const sectionMultilink = Multilink.multilinkAny([section.topYProperty, section.bottomYProperty], syncFromModel);
 
   const dragListener = new DragListener({
+    positionProperty: dragPositionProperty,
     transform: modelViewTransform,
-    start: () => {
-      initialTopY = section.topYProperty.value;
-      initialBottomY = section.bottomYProperty.value;
-    },
-    drag: (_event, listener) => {
-      const halfHeight = (initialTopY - initialBottomY) / 2;
-      let centerY = (initialTopY + initialBottomY) / 2 + listener.modelDelta.y;
-      centerY = Math.max(MIN_PIPE_Y + halfHeight, Math.min(MAX_PIPE_Y - halfHeight, centerY));
-      section.topYProperty.value = centerY + halfHeight;
-      section.bottomYProperty.value = centerY - halfHeight;
-      handle.centerY = pipeHeadNode.centerY;
-    },
+    useParentOffset: true,
+    mapPosition: constrain,
   });
   handle.addInputListener(dragListener);
-  disposers.push(() => dragListener.dispose());
+
+  disposers.push(() => {
+    sectionMultilink.dispose();
+    dragPositionProperty.unlink(syncToModel);
+    dragListener.dispose();
+  });
 }
 
 function createHandleImage(modelY: number): Image {
   const imageRotation = modelY < HANDLE_FLIP_Y_THRESHOLD ? 0 : Math.PI;
-  const imageLeft = modelY < HANDLE_FLIP_Y_THRESHOLD ? -13 : 19;
+  const imageLeft = modelY < HANDLE_FLIP_Y_THRESHOLD ? HANDLE_IMAGE_LEFT : HANDLE_IMAGE_LEFT_FLIPPED;
 
   const image = new Image(handleWithBarImage, {
     left: imageLeft,
@@ -306,7 +357,7 @@ function createRimHandle(
 
 function updateHandleImage(image: Image, modelY: number): void {
   image.rotation = modelY < HANDLE_FLIP_Y_THRESHOLD ? 0 : Math.PI;
-  image.left = modelY < HANDLE_FLIP_Y_THRESHOLD ? -13 : 19;
+  image.left = modelY < HANDLE_FLIP_Y_THRESHOLD ? HANDLE_IMAGE_LEFT : HANDLE_IMAGE_LEFT_FLIPPED;
 }
 
 function attachVerticalDrag(
@@ -340,6 +391,19 @@ function attachVerticalDrag(
   };
   dragPositionProperty.link(syncToModel);
 
+  // The wall this handle owns also moves when the main handle slides the whole
+  // cross-section, and the drag offset is measured from this property, so it has to
+  // follow the model as well as drive it.
+  const syncFromModel = (y: number) => {
+    if (isSyncing) {
+      return;
+    }
+    isSyncing = true;
+    dragPositionProperty.value = new Vector2(section.x, y);
+    isSyncing = false;
+  };
+  config.moved.link(syncFromModel);
+
   const limitListener = () => {
     const constrained = constrain(new Vector2(section.x, config.moved.value));
     if (constrained.y !== config.moved.value) {
@@ -350,9 +414,13 @@ function attachVerticalDrag(
 
   const dragBoundsProperty = new Property(new Bounds2(section.x, MIN_PIPE_Y, section.x, MAX_PIPE_Y));
 
+  // `useParentOffset` measures the grab offset against dragPositionProperty through
+  // the transform. The wrapper is placed by its centre or against a pipe rim, so its
+  // origin is not the point being dragged.
   const dragListener = new DragListener({
     positionProperty: dragPositionProperty,
     transform: modelViewTransform,
+    useParentOffset: true,
     dragBoundsProperty: dragBoundsProperty,
     mapPosition: constrain,
   });
@@ -370,6 +438,7 @@ function attachVerticalDrag(
 
   disposers.push(() => {
     dragPositionProperty.unlink(syncToModel);
+    config.moved.unlink(syncFromModel);
     config.limit.unlink(limitListener);
     dragListener.dispose();
     keyboardDragListener.dispose();

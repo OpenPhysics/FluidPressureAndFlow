@@ -29,16 +29,26 @@ import FluidPressureAndFlowNamespace from "./FluidPressureAndFlowNamespace.js";
 // ── Layout / chrome (screen pixels) ───────────────────────────────────────────
 
 /**
- * Play-area bounds for all three screens.
+ * Play-area bounds for all three screens: the fleet default.
  *
- * Not the modern 1024×618 default. Every piece of geometry in this sim is
- * calibrated against PhET's, in view pixels: the ground line, the metres-per-pixel
- * of each screen, the pipe-head insets, the pool sizes. Those numbers only
- * compose correctly at the size they were drawn for, and the two aspect ratios
- * differ enough (1.52 vs 1.66) that no single rescaling reproduces the layout.
- * Upstream pins the same bounds for the same reason.
+ * Upstream drew everything against 768 × 504, so each screen's view-pixel
+ * geometry — ground line, metres-per-pixel, pipe-head insets, artwork scales —
+ * was recalibrated for this frame. The new frame is relatively wider (aspect
+ * 1.66 vs 1.52), so no single factor fits both axes:
+ *
+ *  - Under Pressure and Water Tower are limited by height, and use 618/504.
+ *    Their extra width becomes clearance between the scene and the right-hand
+ *    control column.
+ *  - Flow is limited by width, and uses 1024/768. Its bitmap pipe heads are
+ *    pinned to the layout edges while the spline middle spans a fixed model
+ *    range, so its metres-per-pixel has to track the width or the spline stops
+ *    short of the right-hand head.
+ *
+ * Chrome does not scale with the frame — panel content widths, instrument
+ * bodies, gauge radii. Holding those fixed while the play area grows is what
+ * the larger frame buys.
  */
-export const LAYOUT_BOUNDS = new Bounds2(0, 0, 768, 504);
+export const LAYOUT_BOUNDS = new Bounds2(0, 0, 1024, 618);
 
 /**
  * Margin between the screen edge and edge-anchored controls (e.g. Reset All).
@@ -125,15 +135,17 @@ export const FLOW_RATE_RANGE = new Range(1, 10);
 export const DEFAULT_FLOW_RATE = 5;
 
 /**
- * Flow screen model-view mapping, taken from the HTML5 reference in totality
- * (`FlowScreenView.js`): model origin at view (370, 140), 50 view px per metre.
+ * Flow screen model-view mapping. The HTML5 reference in totality
+ * (`FlowScreenView.js`) puts the model origin at view (370, 140) with 50 view px
+ * per metre; these are those values widened by 1024/768 for this frame, which is
+ * what keeps the spline middle meeting the bitmap pipe heads at both edges.
  */
-export const FLOW_MODEL_VIEW_ANCHOR = new Vector2(370, 140);
+export const FLOW_MODEL_VIEW_ANCHOR = new Vector2(493, 187);
 
-export const FLOW_VIEW_SCALE = 50;
+export const FLOW_VIEW_SCALE = 66.67;
 
-/** Canvas bounds for pipe tracers; matches upstream `ParticleCanvasNode` options. */
-export const FLOW_PARTICLE_CANVAS_BOUNDS = new Bounds2(20, 80, 800, 600);
+/** Canvas bounds for pipe tracers; upstream `ParticleCanvasNode` options, widened. */
+export const FLOW_PARTICLE_CANVAS_BOUNDS = new Bounds2(27, 107, 1067, 800);
 
 // ── Time stepping ─────────────────────────────────────────────────────────────
 

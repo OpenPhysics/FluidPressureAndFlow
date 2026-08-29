@@ -60,8 +60,11 @@ export type BarometerNodeOptions = {
 export class BarometerNode extends Node {
   private readonly disposeBarometerNode: () => void;
 
-  /** Set in the constructor; used by {@link grabFromToolbox}. */
+  /** All set in the constructor; used by {@link grabFromToolbox}. */
   private readonly dragListener: DragListener;
+  private readonly positionProperty: Property<Vector2>;
+  private readonly modelViewTransform: ModelViewTransform2;
+  private readonly dragBounds: Bounds2;
 
   public constructor(
     barometer: Barometer,
@@ -123,11 +126,22 @@ export class BarometerNode extends Node {
 
     this.children = [tip, gauge, readoutBackground, readoutText];
 
-    // The sampling point is the tip; everything else hangs above it.
-    const tipOffset = tip.centerBottom.minus(this.bounds.leftTop);
+    // The sampling point is the tip, so the children are shifted to put the tip at
+    // this node's origin. Setting `translation` below then lands the tip exactly on
+    // the model position; a bounds-based setter such as `leftTop` would land the
+    // corner of the artwork there instead, and the gauge would read a pressure from
+    // a point the student can't see.
+    const tipAnchor = tip.centerBottom;
+    for (const child of this.children) {
+      child.translate(-tipAnchor.x, -tipAnchor.y);
+    }
+
+    this.positionProperty = barometer.positionProperty;
+    this.modelViewTransform = modelViewTransform;
+    this.dragBounds = options.dragBounds;
+
     const updatePosition = (position: Vector2) => {
-      const viewPosition = modelViewTransform.modelToViewPosition(position);
-      this.leftTop = viewPosition.minus(tipOffset);
+      this.translation = modelViewTransform.modelToViewPosition(position);
     };
     barometer.positionProperty.link(updatePosition);
 
@@ -145,9 +159,13 @@ export class BarometerNode extends Node {
     // cannot be walked somewhere it could not be dragged.
     const dragBoundsProperty = new Property(options.dragBounds);
 
+    // `useParentOffset` measures the grab offset against positionProperty through the
+    // transform rather than against this node's origin. The grab point then stays
+    // under the pointer no matter how the artwork is laid out around the tip.
     this.dragListener = new DragListener({
       positionProperty: barometer.positionProperty,
       transform: modelViewTransform,
+      useParentOffset: true,
       dragBoundsProperty: dragBoundsProperty,
       start: () => {
         barometer.isActiveProperty.value = true;
@@ -197,9 +215,16 @@ export class BarometerNode extends Node {
    * Without this the tray would only be able to activate a sensor and drop it
    * at some fixed spot, and the student would have to grab it a second time to
    * actually place it.
+   *
+   * The press began on the tray, which knows nothing about where this instrument
+   * was left, so the sampling point is moved under the pointer first. From there
+   * the drag carries zero offset and the tip follows the pointer out of the tray.
    */
   public grabFromToolbox(event: PressListenerEvent): void {
     this.moveToFront();
+    this.positionProperty.value = this.dragBounds.closestPointTo(
+      this.modelViewTransform.viewToModelPosition(this.globalToParentPoint(event.pointer.point)),
+    );
     this.dragListener.press(event, this);
   }
 

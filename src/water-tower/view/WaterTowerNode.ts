@@ -32,7 +32,7 @@ const STRUCTURE_LINE_WIDTH = 4;
 const BRACE_LINE_WIDTH = 2;
 
 /** Height of the lid on top of the tank, view pixels. */
-const LID_HEIGHT = 8;
+const LID_HEIGHT = 10;
 
 /** Metres the tank moves per arrow-key press. */
 const KEYBOARD_DRAG_SPEED = 4;
@@ -161,9 +161,13 @@ export class WaterTowerNode extends Node {
     tankBody.focusable = true;
     tankBody.accessibleName = tankAccessibleName;
 
+    // The tower is drawn at absolute view coordinates, so this node's origin says
+    // nothing about where the tank is. `useParentOffset` measures the grab offset
+    // against baseCenterProperty through the transform, which does.
     const tankDragListener = new DragListener({
       positionProperty: waterTower.baseCenterProperty,
       transform: modelViewTransform,
+      useParentOffset: true,
       dragBoundsProperty: tankDragBoundsProperty,
     });
     tankBody.addInputListener(tankDragListener);
@@ -182,18 +186,46 @@ export class WaterTowerNode extends Node {
     // The cover is all-or-nothing: a partly open hole would make the outlet area
     // a hidden extra variable, which is exactly what the design set out to avoid.
     const coverPositionProperty = new Property(new Vector2(0, 0));
+
+    /** Where the cover rests when the hole is open, and when it is shut. */
+    const coverOpenX = HOLE_SIZE * 1.5;
+    const restingCoverPosition = (isOpen: boolean) => new Vector2(isOpen ? coverOpenX : 0, 0);
+
+    // The two properties drive each other, so each direction locks the other out for
+    // the duration of its write rather than relying on the values happening to settle.
+    let isSyncing = false;
+
     const applyCover = (position: Vector2) => {
+      if (isSyncing) {
+        return;
+      }
+      isSyncing = true;
       waterTower.isHoleOpenProperty.value = position.x > HOLE_SIZE / 2;
+      isSyncing = false;
     };
     coverPositionProperty.link(applyCover);
+
+    // Anything that opens or shuts the hole without dragging the cover — a reset, most
+    // often — has to bring the drag position with it, or the next drag would measure
+    // its offset from a place the cover is no longer drawn.
+    const syncCover = (isOpen: boolean) => {
+      if (isSyncing) {
+        return;
+      }
+      isSyncing = true;
+      coverPositionProperty.value = restingCoverPosition(isOpen);
+      isSyncing = false;
+    };
+    waterTower.isHoleOpenProperty.link(syncCover);
 
     const coverDragListener = new DragListener({
       positionProperty: coverPositionProperty,
       transform: modelViewTransform,
-      dragBoundsProperty: new Property(new Bounds2(0, 0, HOLE_SIZE * 1.5, 0)),
+      useParentOffset: true,
+      dragBoundsProperty: new Property(new Bounds2(0, 0, coverOpenX, 0)),
       end: () => {
         // Snap to whichever end it is nearer, so it never rests half-way.
-        coverPositionProperty.value = new Vector2(waterTower.isHoleOpenProperty.value ? HOLE_SIZE * 1.5 : 0, 0);
+        coverPositionProperty.value = restingCoverPosition(waterTower.isHoleOpenProperty.value);
       },
     });
     cover.addInputListener(coverDragListener);
@@ -206,6 +238,7 @@ export class WaterTowerNode extends Node {
     this.disposeWaterTowerNode = () => {
       layoutMultilink.dispose();
       coverPositionProperty.unlink(applyCover);
+      waterTower.isHoleOpenProperty.unlink(syncCover);
       tankDragListener.dispose();
       tankKeyboardListener.dispose();
       coverDragListener.dispose();

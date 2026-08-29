@@ -25,10 +25,10 @@ import type { Pipe } from "../model/Pipe.js";
 const KEYBOARD_DRAG_SPEED = 1.5;
 
 /** Thickness of the hoop, view pixels. */
-const HOOP_LINE_WIDTH = 5;
+const HOOP_LINE_WIDTH = 7;
 
 /** How much wider than the pipe the hoop is drawn, view pixels. */
-const HOOP_OVERHANG = 6;
+const HOOP_OVERHANG = 8;
 
 export type FluxMeterLabels = {
   readonly flowRateStringProperty: TReadOnlyProperty<string>;
@@ -162,9 +162,13 @@ export class FluxMeterNode extends Node {
 
     const dragBoundsProperty = new Property(new Bounds2(pipe.getMinX(), 0, pipe.getMaxX(), 0));
 
+    // The hoop and the panel are drawn at absolute view coordinates, so this node's
+    // origin never moves. `useParentOffset` measures the grab offset against
+    // positionProperty instead, which is the only thing here that tracks the meter.
     const dragListener = new DragListener({
       positionProperty: positionProperty,
       transform: modelViewTransform,
+      useParentOffset: true,
       dragBoundsProperty: dragBoundsProperty,
     });
     this.addInputListener(dragListener);

@@ -20,7 +20,7 @@ import { HOSE_OUTLET_X, type Hose, MAX_HOSE_OUTLET_Y } from "../model/Hose.js";
 import type { WaterTower } from "../model/WaterTower.js";
 
 /** Thickness of the hose, view pixels. */
-const HOSE_LINE_WIDTH = 12;
+const HOSE_LINE_WIDTH = 15;
 
 /** Radius of a grab handle, view pixels. */
 const HANDLE_RADIUS = 9;
@@ -116,9 +116,13 @@ export class HoseNode extends Node {
     hose.outletYProperty.link(syncHeight);
 
     const heightBoundsProperty = new Property(new Bounds2(HOSE_OUTLET_X, 0, HOSE_OUTLET_X, MAX_HOSE_OUTLET_Y));
+    // The handle is placed by its centre, so this node's origin is not the outlet.
+    // `useParentOffset` measures the grab offset against heightPositionProperty
+    // through the transform, and the nozzle keeps the height it was grabbed at.
     const heightDragListener = new DragListener({
       positionProperty: heightPositionProperty,
       transform: modelViewTransform,
+      useParentOffset: true,
       dragBoundsProperty: heightBoundsProperty,
     });
     heightHandle.addInputListener(heightDragListener);

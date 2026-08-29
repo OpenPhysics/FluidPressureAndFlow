@@ -52,11 +52,16 @@ import { SceneRadioButtonGroup } from "./SceneRadioButtonGroup.js";
 import { UnderPressureControlPanel } from "./UnderPressureControlPanel.js";
 import { UnderPressureScreenSummaryContent } from "./UnderPressureScreenSummaryContent.js";
 
-/** View pixels per model metre. Matches PhET's 70 px/m for this screen. */
-const VIEW_SCALE = 70;
+/**
+ * View pixels per model metre. PhET used 70 px/m against a 504-px-tall frame;
+ * this is that scale grown with the frame height, so the pool still occupies the
+ * same fraction of the screen and the sky above it still holds a barometer
+ * lifted to MAX_TOOL_ALTITUDE.
+ */
+const VIEW_SCALE = 86;
 
 /** View y of the ground line (model y = 0). */
-const GROUND_VIEW_Y = 245;
+const GROUND_VIEW_Y = 300;
 
 /** Model x that lands at the horizontal centre of the play area. */
 const MODEL_CENTER_X = -0.7;
