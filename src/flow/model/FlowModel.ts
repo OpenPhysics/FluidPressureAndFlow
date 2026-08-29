@@ -73,6 +73,12 @@ const GRID_MAX_FRACTION = 0.9;
 const GRID_INJECTOR_COOLDOWN = 4;
 
 /**
+ * Model-x nudge (metres) for a particle spawned at the pipe's left edge, so it
+ * starts strictly inside the pipe rather than exactly on the boundary.
+ */
+const PARTICLE_SPAWN_EPSILON = 1e-6;
+
+/**
  * Base pressure inside the pipe, Pa. Sea-level air pressure — the fluid is
  * arriving from a reservoir open to the atmosphere off the left of the screen.
  */
@@ -180,7 +186,7 @@ export class FlowModel extends FluidPressureAndFlowModel {
     if (this.gridInjectorCooldownProperty.value > 0) {
       return;
     }
-    const startX = this.pipe.getMinX() + 1e-6;
+    const startX = this.pipe.getMinX() + PARTICLE_SPAWN_EPSILON;
     for (let column = 0; column < GRID_COLUMNS; column++) {
       for (let row = 0; row < GRID_ROWS; row++) {
         const fraction = GRID_MIN_FRACTION + ((GRID_MAX_FRACTION - GRID_MIN_FRACTION) * row) / (GRID_ROWS - 1);
@@ -207,7 +213,7 @@ export class FlowModel extends FluidPressureAndFlowModel {
       while (this.dripAccumulator >= 1) {
         this.dripAccumulator -= 1;
         const fraction = DRIP_MIN_FRACTION + Math.random() * (DRIP_MAX_FRACTION - DRIP_MIN_FRACTION);
-        this.particles.push(new Particle(this.pipe.getMinX() + 1e-6, fraction, DRIP_RADIUS, false));
+        this.particles.push(new Particle(this.pipe.getMinX() + PARTICLE_SPAWN_EPSILON, fraction, DRIP_RADIUS, false));
       }
     }
 

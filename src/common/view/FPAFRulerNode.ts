@@ -18,6 +18,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, Font, KeyboardDragListener, Node } from "scenerystack/scenery";
 import { RulerNode } from "scenerystack/scenery-phet";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { toDisplayValue, type UnitLabelGroups, type UnitSystem } from "../model/units.js";
 
 /** Width of the ruler body, view pixels. */
@@ -145,7 +146,7 @@ export class FPAFRulerNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: dragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
       start: () => this.moveToFront(),
     });
     this.addInputListener(keyboardDragListener);

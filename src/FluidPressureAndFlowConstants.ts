@@ -147,6 +147,15 @@ export const FLOW_VIEW_SCALE = 66.67;
 /** Canvas bounds for pipe tracers; upstream `ParticleCanvasNode` options, widened. */
 export const FLOW_PARTICLE_CANVAS_BOUNDS = new Bounds2(27, 107, 1067, 800);
 
+// ── Keyboard interaction ─────────────────────────────────────────────────────
+
+/**
+ * Divisor applied to a draggable's keyboard speed while Shift is held, shared by
+ * every KeyboardDragListener in the sim (sensors, tools, masses, the hose, the
+ * pipe handles). Holding Shift halves-then-some the speed for fine positioning.
+ */
+export const SHIFT_KEY_SPEED_DIVISOR = 4;
+
 // ── Time stepping ─────────────────────────────────────────────────────────────
 
 /**
@@ -183,6 +192,7 @@ FluidPressureAndFlowNamespace.register("FluidPressureAndFlowConstants", {
   FLOW_MODEL_VIEW_ANCHOR,
   FLOW_VIEW_SCALE,
   FLOW_PARTICLE_CANVAS_BOUNDS,
+  SHIFT_KEY_SPEED_DIVISOR,
   MAX_DT,
   SLOW_MOTION_FACTOR,
 });

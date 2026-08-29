@@ -41,9 +41,13 @@ export const HOLE_SIZE = 1;
 /** Full capacity of the tank, m³. */
 export const TANK_VOLUME = Math.PI * TANK_RADIUS * TANK_RADIUS * TANK_HEIGHT;
 
+/** Smallest and largest tank radii the capacity slider can produce, metres. */
+const MIN_TANK_RADIUS = 3.5;
+const MAX_TANK_RADIUS = 6.5;
+
 /** Smallest and largest capacities available to the student, m³. */
-export const MIN_TANK_VOLUME = Math.PI * 3.5 * 3.5 * TANK_HEIGHT;
-export const MAX_TANK_VOLUME = Math.PI * 6.5 * 6.5 * TANK_HEIGHT;
+export const MIN_TANK_VOLUME = Math.PI * MIN_TANK_RADIUS * MIN_TANK_RADIUS * TANK_HEIGHT;
+export const MAX_TANK_VOLUME = Math.PI * MAX_TANK_RADIUS * MAX_TANK_RADIUS * TANK_HEIGHT;
 
 /**
  * How full the tank starts, as a fraction of capacity.
@@ -53,6 +57,9 @@ export const MAX_TANK_VOLUME = Math.PI * 6.5 * 6.5 * TANK_HEIGHT;
  * discover.
  */
 const INITIAL_FILL_FRACTION = 0.8;
+
+/** Volume slack (m³) below capacity that still counts as "full", to absorb float error. */
+const FULL_VOLUME_TOLERANCE = 1e-9;
 
 export class WaterTower {
   /** Centre of the tank's base, model coordinates (metres). */
@@ -83,7 +90,7 @@ export class WaterTower {
     });
     this.isFullProperty = new DerivedProperty(
       [this.fluidVolumeProperty, this.capacityProperty],
-      (volume, capacity) => volume >= capacity - 1e-9,
+      (volume, capacity) => volume >= capacity - FULL_VOLUME_TOLERANCE,
     );
   }
 

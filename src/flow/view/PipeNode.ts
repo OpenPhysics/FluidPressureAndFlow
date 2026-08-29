@@ -14,14 +14,12 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Image, Node, Path } from "scenerystack/scenery";
 import { getFluidColor } from "../../common/model/fluidColor.js";
 import { pipeLeftBackImage, pipeLeftFrontImage, pipeRightImage, pipeSegmentImage } from "../../common/view/images.js";
+import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 import { FLOW_PARTICLE_CANVAS_BOUNDS } from "../../FluidPressureAndFlowConstants.js";
 import type { FlowModel } from "../model/FlowModel.js";
 import type { Pipe, WallSample } from "../model/Pipe.js";
 import { ParticleCanvasNode } from "./ParticleCanvasNode.js";
 import { getPipeEndLayout, LEFT_PIPE_X, PIPE_HEAD_X_SCALE, RIGHT_PIPE_LAYOUT_INSET } from "./pipeEndLayout.js";
-
-/** Brown stroke around the flexible middle section, from the PhET artwork. */
-const MIDDLE_WALL_COLOR = "#613705";
 
 const MIDDLE_WALL_LINE_WIDTH = 8;
 
@@ -93,13 +91,13 @@ export class PipeNode extends Node {
     });
 
     const fluid = new Path(null, {
-      stroke: MIDDLE_WALL_COLOR,
+      stroke: FluidPressureAndFlowColors.pipeWallColorProperty,
       lineWidth: 0,
       fill: getFluidColor(fluidDensityProperty.value).toCSS(),
     });
 
     const wall = new Path(null, {
-      stroke: MIDDLE_WALL_COLOR,
+      stroke: FluidPressureAndFlowColors.pipeWallColorProperty,
       lineWidth: MIDDLE_WALL_LINE_WIDTH,
     });
 

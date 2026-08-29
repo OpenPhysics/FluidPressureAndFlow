@@ -45,6 +45,27 @@ const STREAM_WIDTH = 15;
 /** Scale applied to the whole faucet assembly, to fit the pool. */
 const FAUCET_SCALE = 0.61;
 
+/** Vertical run of pipe above the fill tap's spout, view pixels. */
+const INPUT_FAUCET_VERTICAL_PIPE_LENGTH = 20;
+
+/** Vertical run of pipe above the drain's spout, view pixels. */
+const DRAIN_FAUCET_VERTICAL_PIPE_LENGTH = 16;
+
+/** How far a faucet's right edge sits from its spout's model x, view pixels. */
+const FAUCET_SPOUT_RIGHT_INSET = 25;
+
+/** How far above the water's resting surface the fill tap's spout sits, view pixels. */
+const INPUT_FAUCET_BOTTOM_INSET = 32;
+
+/** Overlap between a stream's top and the spout it falls from, so no gap shows, view pixels. */
+const STREAM_SPOUT_OVERLAP = 2;
+
+/** How far below the pool floor the drain's spout sits, view pixels. */
+const DRAIN_FAUCET_BOTTOM_INSET = 37;
+
+/** Length of the drain's falling column, long enough to run off the bottom of the screen, view pixels. */
+const DRAIN_STREAM_FALL_LENGTH = 490;
+
 export type PoolFaucetsNodeOptions = {
   /** Model x the fill tap pours into. */
   readonly inputFaucetX: number;
@@ -72,14 +93,14 @@ export class PoolFaucetsNode extends Node {
     // ── Fill tap, standing above the ground beside the pool ───────────────────
     const inputFaucet = new FaucetNode(1, pool.inputFaucet.flowRateProperty, pool.inputFaucet.isEnabledProperty, {
       horizontalPipeLength: SUPPLY_PIPE_LENGTH,
-      verticalPipeLength: 20,
+      verticalPipeLength: INPUT_FAUCET_VERTICAL_PIPE_LENGTH,
       scale: FAUCET_SCALE,
       closeOnRelease: false,
       accessibleName: options.inputAccessibleName,
     });
     const inputSpoutX = modelViewTransform.modelToViewX(options.inputFaucetX);
-    inputFaucet.right = inputSpoutX + 25;
-    inputFaucet.bottom = modelViewTransform.modelToViewY(0) - 32;
+    inputFaucet.right = inputSpoutX + FAUCET_SPOUT_RIGHT_INSET;
+    inputFaucet.bottom = modelViewTransform.modelToViewY(0) - INPUT_FAUCET_BOTTOM_INSET;
 
     // The column from the spout down to the water surface, so it always lands on
     // the water rather than passing through it or stopping short.
@@ -92,7 +113,7 @@ export class PoolFaucetsNode extends Node {
         if (flowRate <= 0) {
           return;
         }
-        const top = inputFaucet.bottom - 2;
+        const top = inputFaucet.bottom - STREAM_SPOUT_OVERLAP;
         const bottom = modelViewTransform.modelToViewY(pool.getWaterSurfaceY());
         inputStream.setRect(0, 0, STREAM_WIDTH * flowRate, Math.max(0, bottom - top));
         inputStream.centerX = inputSpoutX;
@@ -103,7 +124,7 @@ export class PoolFaucetsNode extends Node {
     // ── Drain, below the floor of the pool ────────────────────────────────────
     const drainFaucet = new FaucetNode(1, pool.drainFaucet.flowRateProperty, pool.drainFaucet.isEnabledProperty, {
       horizontalPipeLength: DRAIN_PIPE_LENGTH,
-      verticalPipeLength: 16,
+      verticalPipeLength: DRAIN_FAUCET_VERTICAL_PIPE_LENGTH,
       scale: FAUCET_SCALE,
       closeOnRelease: false,
       accessibleName: options.drainAccessibleName,
@@ -111,11 +132,11 @@ export class PoolFaucetsNode extends Node {
     // FaucetNode draws its supply pipe to the left of the spout, so anchoring by
     // the node's right edge is what puts the spout where it was asked to go.
     const drainSpoutX = modelViewTransform.modelToViewX(options.drainFaucetX);
-    drainFaucet.right = drainSpoutX + 25;
+    drainFaucet.right = drainSpoutX + FAUCET_SPOUT_RIGHT_INSET;
     // Anchored by its spout just under the pool floor, so the drain reads as taking
     // water from the bottom of the pool however deep the pool is drawn — and so the
     // assembly cannot run off the bottom of the screen.
-    drainFaucet.bottom = modelViewTransform.modelToViewY(-MAX_POOL_HEIGHT) + 37;
+    drainFaucet.bottom = modelViewTransform.modelToViewY(-MAX_POOL_HEIGHT) + DRAIN_FAUCET_BOTTOM_INSET;
 
     // Water leaving the drain runs off the bottom of the screen; the column is
     // drawn long enough to reach it from wherever the pool floor sits.
@@ -126,9 +147,9 @@ export class PoolFaucetsNode extends Node {
       if (flowRate <= 0) {
         return;
       }
-      drainStream.setRect(0, 0, STREAM_WIDTH * flowRate, 490);
+      drainStream.setRect(0, 0, STREAM_WIDTH * flowRate, DRAIN_STREAM_FALL_LENGTH);
       drainStream.centerX = drainSpoutX;
-      drainStream.top = drainFaucet.bottom - 2;
+      drainStream.top = drainFaucet.bottom - STREAM_SPOUT_OVERLAP;
     });
 
     this.children = [inputStream, inputFaucet, drainStream, drainFaucet];

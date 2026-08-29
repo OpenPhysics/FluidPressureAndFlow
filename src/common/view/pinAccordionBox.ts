@@ -15,7 +15,11 @@
  * away from its anchored edge instead of through it.
  */
 
-import type { AccordionBox } from "scenerystack/sun";
+import type { TReadOnlyProperty } from "scenerystack/axon";
+import { Text } from "scenerystack/scenery";
+import type { AccordionBox, AccordionBoxOptions } from "scenerystack/sun";
+import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { PANEL_CORNER_RADIUS } from "../../FluidPressureAndFlowConstants.js";
 
 /**
  * Spread into an AccordionBox's options alongside `pinAccordionBox`. Kept next to
@@ -25,6 +29,42 @@ import type { AccordionBox } from "scenerystack/sun";
 export const ACCORDION_BOX_SHRINK_WHEN_COLLAPSED = {
   useExpandedBoundsWhenCollapsed: false,
 } as const;
+
+const TITLE_FONT = "bold 13px sans-serif";
+const TITLE_MAX_WIDTH = 150;
+const CONTENT_X_MARGIN = 10;
+const CONTENT_Y_MARGIN = 5;
+const BUTTON_X_MARGIN = 8;
+const BUTTON_Y_MARGIN = 4;
+const EXPAND_COLLAPSE_BUTTON_SIDE_LENGTH = 16;
+
+/**
+ * Panel chrome shared by every slider-in-a-box on the three screens (fluid
+ * density, gravity, flow rate): corner radius, panel fill/stroke, margins, and
+ * the expand/collapse button's size. Spread into an AccordionBox's options
+ * alongside a screen-specific `titleNode`, `expandedDefaultValue`, and
+ * `ACCORDION_BOX_SHRINK_WHEN_COLLAPSED`.
+ */
+export const ACCORDION_BOX_CHROME_OPTIONS = {
+  titleAlignX: "center",
+  cornerRadius: PANEL_CORNER_RADIUS,
+  fill: FluidPressureAndFlowColors.panelBackgroundColorProperty,
+  stroke: FluidPressureAndFlowColors.panelBorderColorProperty,
+  contentXMargin: CONTENT_X_MARGIN,
+  contentYMargin: CONTENT_Y_MARGIN,
+  buttonXMargin: BUTTON_X_MARGIN,
+  buttonYMargin: BUTTON_Y_MARGIN,
+  expandCollapseButtonOptions: { sideLength: EXPAND_COLLAPSE_BUTTON_SIDE_LENGTH },
+} satisfies Partial<AccordionBoxOptions>;
+
+/** The bold title text used atop every slider accordion box, in the shared font and width. */
+export function createAccordionBoxTitle(titleStringProperty: TReadOnlyProperty<string>): Text {
+  return new Text(titleStringProperty, {
+    font: TITLE_FONT,
+    fill: FluidPressureAndFlowColors.textColorProperty,
+    maxWidth: TITLE_MAX_WIDTH,
+  });
+}
 
 /**
  * @param box - the box to anchor

@@ -52,6 +52,24 @@ export type UnitSliderOptions = {
 /** Default track width, wide enough for three tick labels without crowding. */
 const DEFAULT_TRACK_WIDTH = 150;
 
+const TRACK_HEIGHT = 4;
+const THUMB_SIZE = new Dimension2(12, 20);
+
+/** Fraction of the range crossed per arrow-key press: fine enough to land on a
+ * particular value, coarse enough to cross the range in a few seconds. */
+const KEYBOARD_STEP_DIVISOR = 100;
+
+/** Fraction of the range crossed per arrow-key press while Shift is held, for fine control. */
+const SHIFT_KEYBOARD_STEP_DIVISOR = 500;
+
+/** Fraction of the range crossed per Page Up/Down press. */
+const PAGE_KEYBOARD_STEP_DIVISOR = 10;
+
+const TICK_LABEL_FONT = "11px sans-serif";
+const TICK_LABEL_MAX_WIDTH = 60;
+const READOUT_FONT = "13px sans-serif";
+const READOUT_SPACING = 2;
+
 export class UnitSlider extends VBox {
   private readonly disposeUnitSlider: () => void;
 
@@ -81,32 +99,30 @@ export class UnitSlider extends VBox {
     });
 
     const slider = new HSlider(valueProperty, range, {
-      trackSize: new Dimension2(options.trackWidth ?? DEFAULT_TRACK_WIDTH, 4),
-      thumbSize: new Dimension2(12, 20),
+      trackSize: new Dimension2(options.trackWidth ?? DEFAULT_TRACK_WIDTH, TRACK_HEIGHT),
+      thumbSize: THUMB_SIZE,
       accessibleName: options.accessibleName,
-      // One percent of the range per arrow press: fine enough to land on a
-      // particular density, coarse enough to cross the range in a few seconds.
-      keyboardStep: range.getLength() / 100,
-      shiftKeyboardStep: range.getLength() / 500,
-      pageKeyboardStep: range.getLength() / 10,
+      keyboardStep: range.getLength() / KEYBOARD_STEP_DIVISOR,
+      shiftKeyboardStep: range.getLength() / SHIFT_KEYBOARD_STEP_DIVISOR,
+      pageKeyboardStep: range.getLength() / PAGE_KEYBOARD_STEP_DIVISOR,
     });
 
     for (const tick of options.majorTicks) {
       slider.addMajorTick(
         tick.value,
         new Text(tick.labelProperty, {
-          font: "11px sans-serif",
+          font: TICK_LABEL_FONT,
           fill: FluidPressureAndFlowColors.textColorProperty,
-          maxWidth: 60,
+          maxWidth: TICK_LABEL_MAX_WIDTH,
         }),
       );
     }
 
     super({
-      spacing: 2,
+      spacing: READOUT_SPACING,
       children: [
         new Text(readoutProperty, {
-          font: "13px sans-serif",
+          font: READOUT_FONT,
           fill: FluidPressureAndFlowColors.textColorProperty,
           maxWidth: DEFAULT_TRACK_WIDTH,
         }),

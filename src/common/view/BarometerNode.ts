@@ -28,20 +28,41 @@ import {
 } from "scenerystack/scenery";
 import { GaugeNode } from "scenerystack/scenery-phet";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
-import { PRESSURE_RANGE } from "../../FluidPressureAndFlowConstants.js";
+import { PRESSURE_RANGE, SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import type { Barometer } from "../model/Barometer.js";
 
-/** Radius of the dial face, view pixels. */
-const GAUGE_RADIUS = 34;
+/**
+ * Radius of the dial face, view pixels. Exported because the stowed tray icon in
+ * createSensorIcons.ts is drawn at the instrument's true size, not a thumbnail.
+ */
+export const GAUGE_RADIUS = 34;
 
-/** Height of the pointed tip below the dial, view pixels. */
-const TIP_HEIGHT = 12;
+/** Height of the pointed tip below the dial, view pixels. Shared with the tray icon. */
+export const TIP_HEIGHT = 12;
 
-/** Half-width of the tip where it meets the dial, view pixels. */
-const TIP_HALF_WIDTH = 7;
+/** Half-width of the tip where it meets the dial, view pixels. Shared with the tray icon. */
+export const TIP_HALF_WIDTH = 7;
 
 /** Metres the sampling point moves per arrow-key press. */
 const KEYBOARD_DRAG_SPEED = 3;
+
+const READOUT_FONT = "bold 12px sans-serif";
+
+/** Width of the digital readout text, relative to the dial radius — narrower than the background behind it. */
+const READOUT_TEXT_MAX_WIDTH_RATIO = 1.9;
+
+/** Width of the digital readout's background pill, relative to the dial radius. Shared with the tray icon. */
+export const READOUT_BACKGROUND_WIDTH_RATIO = 2.1;
+
+/** Shared with the tray icon's readout pill. */
+export const READOUT_BACKGROUND_HEIGHT = 19;
+export const READOUT_BACKGROUND_CORNER_RADIUS = 3;
+
+/** How far the readout pill tucks up under the dial, view pixels. Shared with the tray icon. */
+export const READOUT_OVERLAP_WITH_GAUGE = 10;
+
+/** How far the tip tucks up under the readout pill, view pixels. Shared with the tray icon. */
+export const TIP_OVERLAP_WITH_READOUT = 2;
 
 export type BarometerNodeOptions = {
   /** Where the barometer returns to when dropped back on the toolbox. */
@@ -99,17 +120,25 @@ export class BarometerNode extends Node {
     // it: GaugeNode already writes its own label across the middle of the face,
     // and stacking a second readout there leaves both unreadable.
     const readoutText = new Text(pressureTextProperty, {
-      font: "bold 12px sans-serif",
+      font: READOUT_FONT,
       fill: FluidPressureAndFlowColors.controlSurfaceTextColorProperty,
-      maxWidth: GAUGE_RADIUS * 1.9,
+      maxWidth: GAUGE_RADIUS * READOUT_TEXT_MAX_WIDTH_RATIO,
     });
-    const readoutBackground = new Rectangle(0, 0, GAUGE_RADIUS * 2.1, 19, 3, 3, {
-      fill: FluidPressureAndFlowColors.gaugeFaceColorProperty,
-      stroke: FluidPressureAndFlowColors.gaugeRimColorProperty,
-      lineWidth: 2,
-      centerX: gauge.centerX,
-      top: gauge.bottom - 10,
-    });
+    const readoutBackground = new Rectangle(
+      0,
+      0,
+      GAUGE_RADIUS * READOUT_BACKGROUND_WIDTH_RATIO,
+      READOUT_BACKGROUND_HEIGHT,
+      READOUT_BACKGROUND_CORNER_RADIUS,
+      READOUT_BACKGROUND_CORNER_RADIUS,
+      {
+        fill: FluidPressureAndFlowColors.gaugeFaceColorProperty,
+        stroke: FluidPressureAndFlowColors.gaugeRimColorProperty,
+        lineWidth: 2,
+        centerX: gauge.centerX,
+        top: gauge.bottom - READOUT_OVERLAP_WITH_GAUGE,
+      },
+    );
     const centerReadout = () => {
       readoutText.center = readoutBackground.center;
     };
@@ -119,7 +148,7 @@ export class BarometerNode extends Node {
       new Shape().moveTo(-TIP_HALF_WIDTH, 0).lineTo(TIP_HALF_WIDTH, 0).lineTo(0, TIP_HEIGHT).close(),
       {
         fill: FluidPressureAndFlowColors.gaugeRimColorProperty,
-        top: readoutBackground.bottom - 2,
+        top: readoutBackground.bottom - TIP_OVERLAP_WITH_READOUT,
         centerX: gauge.centerX,
       },
     );
@@ -180,7 +209,7 @@ export class BarometerNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: dragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
       start: () => {
         barometer.isActiveProperty.value = true;
         this.moveToFront();

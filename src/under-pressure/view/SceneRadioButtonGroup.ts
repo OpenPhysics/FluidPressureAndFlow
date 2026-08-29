@@ -39,6 +39,12 @@ const ICON_GROUND_Y = 10;
 /** How full each icon's pool is drawn, as a fraction of its depth. */
 const ICON_FILL_FRACTION = 0.55;
 
+/** Horizontal gap between the square icon's basin and the icon's own edges. */
+const SQUARE_ICON_SIDE_MARGIN = 12;
+
+/** Font for the mystery icon's "?" glyph. */
+const MYSTERY_GLYPH_FONT = "bold 16px sans-serif";
+
 export class SceneRadioButtonGroup extends RectangularRadioButtonGroup<PoolScene> {
   public constructor(
     sceneProperty: EnumerationProperty<PoolScene>,
@@ -94,7 +100,12 @@ const ICON_POOL_BOTTOM = ICON_HEIGHT - 6;
 
 /** A plain rectangular basin. */
 function squareIconShape(): Shape {
-  return Shape.rect(12, ICON_GROUND_Y, ICON_WIDTH - 24, ICON_POOL_BOTTOM - ICON_GROUND_Y);
+  return Shape.rect(
+    SQUARE_ICON_SIDE_MARGIN,
+    ICON_GROUND_Y,
+    ICON_WIDTH - 2 * SQUARE_ICON_SIDE_MARGIN,
+    ICON_POOL_BOTTOM - ICON_GROUND_Y,
+  );
 }
 
 /** Two chambers with opposite taper, joined along the floor. */
@@ -162,7 +173,7 @@ function createIcon(shape: Shape, isMystery = false): Node {
   if (isMystery) {
     children.push(
       new Text("?", {
-        font: "bold 16px sans-serif",
+        font: MYSTERY_GLYPH_FONT,
         fill: FluidPressureAndFlowColors.textColorProperty,
         centerX: ICON_WIDTH / 2,
         centerY: (ICON_GROUND_Y + ICON_HEIGHT) / 2,

@@ -20,6 +20,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, KeyboardDragListener, Node, Path, Rectangle } from "scenerystack/scenery";
 import { getFluidColor } from "../../common/model/fluidColor.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { HOLE_SIZE, MAX_TANK_BASE_Y, MIN_TANK_BASE_Y, TANK_HEIGHT, type WaterTower } from "../model/WaterTower.js";
 
 /** How far the legs splay out from the tank wall, metres. */
@@ -36,6 +37,20 @@ const LID_HEIGHT = 10;
 
 /** Metres the tank moves per arrow-key press. */
 const KEYBOARD_DRAG_SPEED = 4;
+
+/** How far the lid overhangs the tank wall on each side, view pixels. */
+const LID_OVERHANG = 3;
+
+/** Size of the cover, relative to the hole it slides over. */
+const COVER_WIDTH_RATIO = 0.6;
+const COVER_HEIGHT_RATIO = 1.4;
+
+/** Where the cover's left edge sits, relative to the hole size, when open and when shut. */
+const COVER_OPEN_LEFT_INSET_RATIO = 0.7;
+const COVER_CLOSED_LEFT_INSET_RATIO = 0.2;
+
+/** Distance the cover slides to clear the hole, relative to the hole size. */
+const COVER_OPEN_DISTANCE_RATIO = 1.5;
 
 export class WaterTowerNode extends Node {
   private readonly disposeWaterTowerNode: () => void;
@@ -97,7 +112,7 @@ export class WaterTowerNode extends Node {
       water.shape = Shape.rect(leftX, surfaceY, rightX - leftX, Math.max(0, baseY - surfaceY));
       water.fill = getFluidColor(fluidDensityProperty.value).toCSS();
 
-      lid.setRect(leftX - 3, topY - LID_HEIGHT, rightX - leftX + 6, LID_HEIGHT);
+      lid.setRect(leftX - LID_OVERHANG, topY - LID_HEIGHT, rightX - leftX + 2 * LID_OVERHANG, LID_HEIGHT);
 
       // Legs from the tank's underside out to the ground, splayed for stability.
       const groundY = modelViewTransform.modelToViewY(0);
@@ -134,9 +149,11 @@ export class WaterTowerNode extends Node {
       // it when the hole is open.
       const holePosition = waterTower.getHolePosition();
       const holeViewSize = modelViewTransform.modelToViewDeltaX(HOLE_SIZE);
-      cover.setRect(0, 0, holeViewSize * 0.6, holeViewSize * 1.4);
+      cover.setRect(0, 0, holeViewSize * COVER_WIDTH_RATIO, holeViewSize * COVER_HEIGHT_RATIO);
       cover.centerY = modelViewTransform.modelToViewY(holePosition.y);
-      cover.left = waterTower.isHoleOpenProperty.value ? rightX + holeViewSize * 0.7 : rightX - holeViewSize * 0.2;
+      cover.left = waterTower.isHoleOpenProperty.value
+        ? rightX + holeViewSize * COVER_OPEN_LEFT_INSET_RATIO
+        : rightX - holeViewSize * COVER_CLOSED_LEFT_INSET_RATIO;
     };
 
     const layoutMultilink = Multilink.multilinkAny(
@@ -178,7 +195,7 @@ export class WaterTowerNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: tankDragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
     });
     tankBody.addInputListener(tankKeyboardListener);
 
@@ -188,7 +205,7 @@ export class WaterTowerNode extends Node {
     const coverPositionProperty = new Property(new Vector2(0, 0));
 
     /** Where the cover rests when the hole is open, and when it is shut. */
-    const coverOpenX = HOLE_SIZE * 1.5;
+    const coverOpenX = HOLE_SIZE * COVER_OPEN_DISTANCE_RATIO;
     const restingCoverPosition = (isOpen: boolean) => new Vector2(isOpen ? coverOpenX : 0, 0);
 
     // The two properties drive each other, so each direction locks the other out for

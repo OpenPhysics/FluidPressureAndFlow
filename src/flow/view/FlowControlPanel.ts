@@ -16,6 +16,7 @@
 import type { BooleanProperty, EnumerationProperty, TReadOnlyProperty } from "scenerystack/axon";
 import { Text, VBox } from "scenerystack/scenery";
 import { Checkbox } from "scenerystack/sun";
+import { CHECKBOX_OPTIONS } from "../../common/FluidPressureAndFlowControlOptions.js";
 import { FluidPressureAndFlowPanel } from "../../common/FluidPressureAndFlowPanel.js";
 import type { UnitSystem } from "../../common/model/units.js";
 import { UnitsControlPanel, type UnitsControlPanelLabels } from "../../common/view/UnitsControlPanel.js";
@@ -64,7 +65,7 @@ export class FlowControlPanel extends VBox {
           fill: FluidPressureAndFlowColors.textColorProperty,
           maxWidth: CONTENT_WIDTH - 30,
         }),
-        { boxWidth: 16, accessibleName: accessibleName },
+        { ...CHECKBOX_OPTIONS, accessibleName: accessibleName },
       );
 
     const toggles = new FluidPressureAndFlowPanel(

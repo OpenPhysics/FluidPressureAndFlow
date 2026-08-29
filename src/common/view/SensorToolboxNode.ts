@@ -17,6 +17,9 @@ import type { Vector2 } from "scenerystack/dot";
 import { HBox, Node, type PressListenerEvent } from "scenerystack/scenery";
 import { FluidPressureAndFlowPanel } from "../FluidPressureAndFlowPanel.js";
 
+/** Opacity of a slot with nothing left in it. */
+const DISABLED_OPACITY = 0.4;
+
 /**
  * All the toolbox needs of an instrument: whether it is out, and where it is.
  * Narrower than {@link Sensor} on purpose, so one tray can hold barometers and
@@ -93,7 +96,7 @@ export class SensorToolboxNode extends FluidPressureAndFlowPanel {
         () => item.sensors.some((sensor) => !sensor.isActiveProperty.value),
       );
       const updateEnabled = (hasAvailable: boolean) => {
-        slot.opacity = hasAvailable ? 1 : 0.4;
+        slot.opacity = hasAvailable ? 1 : DISABLED_OPACITY;
         slot.pickable = hasAvailable;
         slot.focusable = hasAvailable;
       };
