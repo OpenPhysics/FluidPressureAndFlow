@@ -10,7 +10,7 @@ import { Multilink, Property, type TReadOnlyProperty } from "scenerystack/axon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, Image, KeyboardDragListener, Node } from "scenerystack/scenery";
-import handleWithBarUrl from "../../../images/handleWithBar.png";
+import { handleWithBarImage } from "../../common/view/images.js";
 import { MAX_PIPE_Y, MIN_PIPE_HEIGHT, MIN_PIPE_Y, type Pipe } from "../model/Pipe.js";
 import type { PipeCrossSection } from "../model/PipeCrossSection.js";
 import type { PipeNode } from "./PipeNode.js";
@@ -145,7 +145,7 @@ export class PipeHandlesNode extends Node {
 }
 
 function createMainHandleImage(): Image {
-  const handle = new Image(handleWithBarUrl, {
+  const handle = new Image(handleWithBarImage, {
     cursor: "pointer",
     scale: HANDLE_IMAGE_SCALE,
   });
@@ -192,7 +192,7 @@ function createHandleImage(modelY: number): Image {
   const imageRotation = modelY < HANDLE_FLIP_Y_THRESHOLD ? 0 : Math.PI;
   const imageLeft = modelY < HANDLE_FLIP_Y_THRESHOLD ? -13 : 19;
 
-  const image = new Image(handleWithBarUrl, {
+  const image = new Image(handleWithBarImage, {
     left: imageLeft,
     cursor: "ns-resize",
     scale: HANDLE_IMAGE_SCALE,

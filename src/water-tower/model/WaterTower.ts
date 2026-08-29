@@ -21,14 +21,19 @@ export const TANK_RADIUS = 5;
 /** Height of the tank, metres. */
 export const TANK_HEIGHT = 10;
 
-/** Highest the tank's base may be dragged, metres. */
-export const MAX_TANK_BASE_Y = 18;
+/**
+ * Highest the tank's base may be dragged, metres.
+ *
+ * Capped so the tank's lid still clears the faucet above it; a tank that could be
+ * raised past its own supply would be filling from nowhere.
+ */
+export const MAX_TANK_BASE_Y = 15;
 
 /** Lowest the tank's base may be dragged, metres. Keeps the legs on the ground. */
 export const MIN_TANK_BASE_Y = 6;
 
 /** Where the tank's base starts, metres. Not at the top, so it can be raised as well as lowered. */
-export const INITIAL_TANK_BASE_Y = 15;
+export const INITIAL_TANK_BASE_Y = 11;
 
 /** Diameter of the hole in the tank's side, metres. */
 export const HOLE_SIZE = 1;

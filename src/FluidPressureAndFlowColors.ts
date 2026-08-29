@@ -27,34 +27,56 @@ import FluidPressureAndFlowNamespace from "./FluidPressureAndFlowNamespace.js";
 const FluidPressureAndFlowColors = {
   // ── Scene ───────────────────────────────────────────────────────────────────
 
-  /** Screen background, and the sky at the horizon. */
+  /**
+   * Screen background, and the sky at the horizon. PhET's SkyNode fades to white
+   * at the ground line; keeping the horizon pale is what makes the grass strip
+   * read as a horizon rather than as a stripe painted across a flat blue field.
+   */
   backgroundColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "background", {
-    default: "#c5e5f7",
-    projector: "#e8f4fc",
+    default: "#d0ecfb",
+    projector: "#eaf6fd",
   }),
 
   /** Sky at the top of the screen; fades down into the background colour. */
   skyTopColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "skyTop", {
-    default: "#87ceeb",
-    projector: "#bfe3f5",
+    default: "#01ace4",
+    projector: "#8ad6f0",
   }),
 
-  /** Earth immediately below the grass line. */
-  groundTopColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "groundTop", {
-    default: "#a89a72",
-    projector: "#c7bc9c",
+  /** Earth immediately below the grass line, on the screens that cut into it. */
+  earthTopColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "earthTop", {
+    default: "#9d8b61",
+    projector: "#c2b48d",
   }),
 
-  /** Earth at the bottom of the screen; the ground darkens with depth. */
-  groundBottomColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "groundBottom", {
-    default: "#5c5236",
-    projector: "#8f8462",
+  /** Earth at depth; the cross-section darkens as it goes down. */
+  earthBottomColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "earthBottom", {
+    default: "#645a3c",
+    projector: "#94886a",
+  }),
+
+  /** Lawn on the Water Tower screen, which buries nothing. */
+  turfTopColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "turfTop", {
+    default: "#90c756",
+    projector: "#aedd7c",
+  }),
+
+  /** Lawn in shade, a little way down. */
+  turfBottomColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "turfBottom", {
+    default: "#67a257",
+    projector: "#8cbe7c",
   }),
 
   /** The strip of grass along the ground line. */
   grassColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "grass", {
     default: "#63b74d",
     projector: "#7fc96b",
+  }),
+
+  /** Shadow along the underside of the grass, so the strip reads as turf with depth. */
+  grassShadowColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "grassShadow", {
+    default: "#3f7c30",
+    projector: "#5a9848",
   }),
 
   // ── Pools and pipes ─────────────────────────────────────────────────────────
@@ -91,6 +113,24 @@ const FluidPressureAndFlowColors = {
   mysteryFluidColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "mysteryFluid", {
     default: "#9b59b6",
     projector: "#7d3f96",
+  }),
+
+  /**
+   * The water tower's frame: legs, bracing, and the tank's wall.
+   *
+   * Near-black, because the tower is the one structure in the sim drawn against
+   * open sky rather than against ground. A mid-grey that reads as concrete at the
+   * pools disappears against the horizon here.
+   */
+  towerStructureColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "towerStructure", {
+    default: "#1a1a1a",
+    projector: "#000000",
+  }),
+
+  /** The tank's lid, and the band around its base. */
+  towerTrimColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "towerTrim", {
+    default: "#9a9a9a",
+    projector: "#7d7d7d",
   }),
 
   /** The stackable weights in the chamber pool. */

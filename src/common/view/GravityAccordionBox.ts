@@ -1,7 +1,7 @@
 /**
  * GravityAccordionBox.ts
  *
- * The gravity slider, in a box that starts collapsed. Only the Under Pressure
+ * The gravity slider, in an accordion box. Only the Under Pressure
  * screen has one.
  *
  * Gravity is deliberately absent from the other two screens. On the Water Tower
@@ -25,13 +25,14 @@ import {
   PANEL_CORNER_RADIUS,
 } from "../../FluidPressureAndFlowConstants.js";
 import type { UnitLabelGroups, UnitSystem } from "../model/units.js";
+import { ACCORDION_BOX_SHRINK_WHEN_COLLAPSED } from "./pinAccordionBox.js";
 import { UnitSlider } from "./UnitSlider.js";
 
 export type GravityLabels = {
   readonly gravityStringProperty: TReadOnlyProperty<string>;
-  readonly lowStringProperty: TReadOnlyProperty<string>;
+  readonly marsStringProperty: TReadOnlyProperty<string>;
   readonly earthStringProperty: TReadOnlyProperty<string>;
-  readonly highStringProperty: TReadOnlyProperty<string>;
+  readonly jupiterStringProperty: TReadOnlyProperty<string>;
 };
 
 export class GravityAccordionBox extends AccordionBox {
@@ -46,9 +47,9 @@ export class GravityAccordionBox extends AccordionBox {
       conversionFor: (system) => system.gravity,
       unitsLabelFor: (system) => system.labels(unitLabelGroups).gravityStringProperty,
       majorTicks: [
-        { value: MARS_GRAVITY, labelProperty: labels.lowStringProperty },
+        { value: MARS_GRAVITY, labelProperty: labels.marsStringProperty },
         { value: EARTH_GRAVITY, labelProperty: labels.earthStringProperty },
-        { value: JUPITER_GRAVITY, labelProperty: labels.highStringProperty },
+        { value: JUPITER_GRAVITY, labelProperty: labels.jupiterStringProperty },
       ],
       accessibleName: accessibleName,
     });
@@ -59,15 +60,18 @@ export class GravityAccordionBox extends AccordionBox {
         fill: FluidPressureAndFlowColors.textColorProperty,
         maxWidth: 150,
       }),
-      expandedDefaultValue: false,
-      titleAlignX: "left",
+      ...ACCORDION_BOX_SHRINK_WHEN_COLLAPSED,
+      // Under Pressure is the only screen with this box, and gravity is one of
+      // the two quantities the screen exists to let a student vary.
+      expandedDefaultValue: true,
+      titleAlignX: "center",
       cornerRadius: PANEL_CORNER_RADIUS,
       fill: FluidPressureAndFlowColors.panelBackgroundColorProperty,
       stroke: FluidPressureAndFlowColors.panelBorderColorProperty,
       contentXMargin: 10,
-      contentYMargin: 8,
+      contentYMargin: 5,
       buttonXMargin: 8,
-      buttonYMargin: 6,
+      buttonYMargin: 4,
       expandCollapseButtonOptions: { sideLength: 16 },
     });
   }

@@ -31,9 +31,15 @@ import { createBarometerIcon } from "../../common/view/createSensorIcons.js";
 import { FluidDensityAccordionBox } from "../../common/view/FluidDensityAccordionBox.js";
 import { FPAFRulerNode } from "../../common/view/FPAFRulerNode.js";
 import { GravityAccordionBox } from "../../common/view/GravityAccordionBox.js";
+import { pinAccordionBox } from "../../common/view/pinAccordionBox.js";
 import { SensorToolboxNode } from "../../common/view/SensorToolboxNode.js";
 import { SkyGroundNode } from "../../common/view/SkyGroundNode.js";
-import { MAX_POOL_HEIGHT, PANEL_SPACING, SCREEN_VIEW_MARGIN } from "../../FluidPressureAndFlowConstants.js";
+import {
+  LAYOUT_BOUNDS,
+  MAX_POOL_HEIGHT,
+  PANEL_SPACING,
+  SCREEN_VIEW_MARGIN,
+} from "../../FluidPressureAndFlowConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import { MysteryQuantity } from "../model/MysteryPoolModel.js";
 import { PoolScene } from "../model/PoolScene.js";
@@ -46,11 +52,11 @@ import { SceneRadioButtonGroup } from "./SceneRadioButtonGroup.js";
 import { UnderPressureControlPanel } from "./UnderPressureControlPanel.js";
 import { UnderPressureScreenSummaryContent } from "./UnderPressureScreenSummaryContent.js";
 
-/** View pixels per model metre. */
-const VIEW_SCALE = 62;
+/** View pixels per model metre. Matches PhET's 70 px/m for this screen. */
+const VIEW_SCALE = 70;
 
 /** View y of the ground line (model y = 0). */
-const GROUND_VIEW_Y = 250;
+const GROUND_VIEW_Y = 245;
 
 /** Model x that lands at the horizontal centre of the play area. */
 const MODEL_CENTER_X = -0.7;
@@ -73,7 +79,7 @@ export class UnderPressureScreenView extends ScreenView {
 
   public constructor(model: UnderPressureModel, providedOptions?: UnderPressureScreenViewOptions) {
     const options = optionize<UnderPressureScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
-      { screenSummaryContent: new UnderPressureScreenSummaryContent(model) },
+      { layoutBounds: LAYOUT_BOUNDS, screenSummaryContent: new UnderPressureScreenSummaryContent(model) },
       providedOptions,
     );
     super(options);
@@ -222,9 +228,9 @@ export class UnderPressureScreenView extends ScreenView {
       MAX_TOOL_ALTITUDE,
     );
 
-    // Where a keyboard-taken barometer lands: in the open sky just below the
-    // tray, clear of the panels and well inside the drag bounds.
-    const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.minX + 90), 1.5);
+    // Where a keyboard-taken barometer lands: in the open sky over the pool, clear
+    // of the tray and the panels and well inside the drag bounds.
+    const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.centerX), 1.5);
 
     const sensorLayer = new Node();
     this.addChild(sensorLayer);
@@ -234,7 +240,7 @@ export class UnderPressureScreenView extends ScreenView {
     const toolbox = new SensorToolboxNode([
       {
         sensors: model.barometers,
-        icon: createBarometerIcon(),
+        icon: createBarometerIcon(common.pressureStringProperty),
         accessibleName: a11y.controls.barometerStringProperty,
         keyboardGrabPosition: keyboardGrabPosition,
         onGrab: (sensor, event) => {
@@ -242,8 +248,6 @@ export class UnderPressureScreenView extends ScreenView {
         },
       },
     ]);
-    toolbox.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
-    toolbox.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(toolbox);
 
     for (const barometer of model.barometers) {
@@ -291,8 +295,11 @@ export class UnderPressureScreenView extends ScreenView {
       screenStrings.scenes,
       a11y.controls.sceneChooserStringProperty,
     );
-    sceneRadioButtons.left = toolbox.right + PANEL_SPACING * 2;
-    sceneRadioButtons.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
+    // Down the left edge, starting just below the ground line: the four scenes are
+    // read against the pool they switch between, and the sky above has to stay
+    // clear for the barometers a student drags out of the tray.
+    sceneRadioButtons.left = this.layoutBounds.minX + 10;
+    sceneRadioButtons.top = GROUND_VIEW_Y + 10;
     this.addChild(sceneRadioButtons);
 
     const controlPanel = new UnderPressureControlPanel(
@@ -307,6 +314,12 @@ export class UnderPressureScreenView extends ScreenView {
     controlPanel.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(controlPanel);
 
+    // The tray goes immediately left of the controls, not in the far corner: a
+    // barometer is dragged down onto the pool, and starting it above the middle of
+    // the screen keeps that drag short and away from the faucet.
+    toolbox.right = controlPanel.left - PANEL_SPACING;
+    toolbox.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
+
     const gravityBox = new GravityAccordionBox(
       model.gravityProperty,
       model.unitSystemProperty,
@@ -320,12 +333,9 @@ export class UnderPressureScreenView extends ScreenView {
       unitLabelGroups,
       common,
       a11y.controls.fluidDensitySliderStringProperty,
+      { expandedDefaultValue: true },
     );
 
-    fluidDensityBox.right = this.layoutBounds.maxX - SCREEN_VIEW_MARGIN;
-    fluidDensityBox.bottom = this.layoutBounds.maxY - SCREEN_VIEW_MARGIN - 60;
-    gravityBox.right = fluidDensityBox.right;
-    gravityBox.bottom = fluidDensityBox.top - PANEL_SPACING;
     this.addChild(gravityBox);
     this.addChild(fluidDensityBox);
 
@@ -349,6 +359,19 @@ export class UnderPressureScreenView extends ScreenView {
       bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
     });
     this.addChild(resetAllButton);
+
+    // The right-hand column is stacked upward from Reset All, because the two
+    // sliders change height when a student folds them and only the bottom of the
+    // column is a fixed landmark. Gravity sits nearer the button since it is the
+    // one the Mystery scene disables most often.
+    const stackRightColumn = () => {
+      gravityBox.right = resetAllButton.right;
+      gravityBox.bottom = resetAllButton.top - PANEL_SPACING;
+      fluidDensityBox.right = gravityBox.right;
+      fluidDensityBox.bottom = gravityBox.top - PANEL_SPACING;
+    };
+    pinAccordionBox(gravityBox, stackRightColumn);
+    pinAccordionBox(fluidDensityBox, stackRightColumn);
 
     // ── Traversal order ───────────────────────────────────────────────────────
     // Scene first, since it changes what everything else refers to; then the

@@ -40,8 +40,8 @@ export class FluidPressureAndFlowPanel extends Panel {
         fill: FluidPressureAndFlowColors.panelBackgroundColorProperty,
         stroke: FluidPressureAndFlowColors.panelBorderColorProperty,
         cornerRadius: PANEL_CORNER_RADIUS,
-        xMargin: 12,
-        yMargin: 10,
+        xMargin: 10,
+        yMargin: 7,
       },
       providedOptions,
     );

@@ -50,7 +50,7 @@ export type UnitSliderOptions = {
 };
 
 /** Default track width, wide enough for three tick labels without crowding. */
-const DEFAULT_TRACK_WIDTH = 170;
+const DEFAULT_TRACK_WIDTH = 150;
 
 export class UnitSlider extends VBox {
   private readonly disposeUnitSlider: () => void;
@@ -82,7 +82,7 @@ export class UnitSlider extends VBox {
 
     const slider = new HSlider(valueProperty, range, {
       trackSize: new Dimension2(options.trackWidth ?? DEFAULT_TRACK_WIDTH, 4),
-      thumbSize: new Dimension2(13, 24),
+      thumbSize: new Dimension2(12, 20),
       accessibleName: options.accessibleName,
       // One percent of the range per arrow press: fine enough to land on a
       // particular density, coarse enough to cross the range in a few seconds.
@@ -103,7 +103,7 @@ export class UnitSlider extends VBox {
     }
 
     super({
-      spacing: 4,
+      spacing: 2,
       children: [
         new Text(readoutProperty, {
           font: "13px sans-serif",

@@ -1,8 +1,14 @@
 /**
  * UnderPressureControlPanel.ts
  *
- * The panel down the right-hand side: the ruler and grid toggles, the atmosphere
+ * The controls down the right-hand side: the ruler and grid toggles, the atmosphere
  * switch, and the unit-system chooser.
+ *
+ * Two boxes rather than one. The first three are things a student touches while
+ * working a question — show a ruler, turn the air off, see what changes. The unit
+ * system is set once and left alone. Separating them means the frequently-used
+ * controls sit at a constant height no matter how tall the unit list gets in
+ * translation.
  *
  * The atmosphere switch sits here rather than in Preferences because it is a
  * physics control, not a setting. Turning the air off drops every above-water
@@ -17,6 +23,7 @@ import { FluidPressureAndFlowPanel } from "../../common/FluidPressureAndFlowPane
 import type { UnitSystem } from "../../common/model/units.js";
 import { UnitsControlPanel, type UnitsControlPanelLabels } from "../../common/view/UnitsControlPanel.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { PANEL_SPACING } from "../../FluidPressureAndFlowConstants.js";
 
 const TITLE_FONT = "bold 13px sans-serif";
 const LABEL_FONT = "13px sans-serif";
@@ -39,7 +46,7 @@ export type UnderPressureControlPanelAccessibleNames = {
   readonly unitsControlStringProperty: TReadOnlyProperty<string>;
 };
 
-export class UnderPressureControlPanel extends FluidPressureAndFlowPanel {
+export class UnderPressureControlPanel extends VBox {
   public constructor(
     isRulerVisibleProperty: BooleanProperty,
     isGridVisibleProperty: BooleanProperty,
@@ -111,22 +118,25 @@ export class UnderPressureControlPanel extends FluidPressureAndFlowPanel {
       ],
     });
 
-    const unitsControl = new UnitsControlPanel(unitSystemProperty, labels, accessibleNames.unitsControlStringProperty);
-
-    super(
+    const toolsAndAtmosphere = new FluidPressureAndFlowPanel(
       new VBox({
         align: "left",
-        spacing: 10,
+        spacing: 6,
         children: [
           rulerCheckbox,
           gridCheckbox,
           new HSeparator({ stroke: FluidPressureAndFlowColors.panelBorderColorProperty }),
           atmosphereControl,
-          new HSeparator({ stroke: FluidPressureAndFlowColors.panelBorderColorProperty }),
-          unitsControl,
         ],
       }),
       { minWidth: CONTENT_WIDTH },
     );
+
+    const units = new FluidPressureAndFlowPanel(
+      new UnitsControlPanel(unitSystemProperty, labels, accessibleNames.unitsControlStringProperty),
+      { minWidth: CONTENT_WIDTH },
+    );
+
+    super({ align: "right", spacing: PANEL_SPACING, children: [toolsAndAtmosphere, units] });
   }
 }

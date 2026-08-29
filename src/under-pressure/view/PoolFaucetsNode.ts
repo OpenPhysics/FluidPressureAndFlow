@@ -31,10 +31,13 @@ import type { PoolWithFaucetsModel } from "../model/PoolWithFaucetsModel.js";
 const SUPPLY_PIPE_LENGTH = 900;
 
 /**
- * Length of the drain's pipe. Shorter, because it runs underground beneath the
- * pool and a full-width pipe down there would read as a second vessel.
+ * Length of the drain's pipe. Just long enough to read as a stub emerging from
+ * the pool wall: it is anchored by its spout, so any extra length runs back
+ * *into* the pool, drawing a pipe across the water the student is measuring.
  */
-const DRAIN_PIPE_LENGTH = 260;
+// FaucetNode needs enough room for its 112px spout offset. At the displayed
+// 0.5 scale this remains a compact, 60px drain-pipe stub.
+const DRAIN_PIPE_LENGTH = 120;
 
 /** How wide the falling column of water is drawn, view pixels. */
 const STREAM_WIDTH = 12;
@@ -109,7 +112,10 @@ export class PoolFaucetsNode extends Node {
     // the node's right edge is what puts the spout where it was asked to go.
     const drainSpoutX = modelViewTransform.modelToViewX(options.drainFaucetX);
     drainFaucet.right = drainSpoutX + 20;
-    drainFaucet.top = modelViewTransform.modelToViewY(-MAX_POOL_HEIGHT) + 24;
+    // Anchored by its spout just under the pool floor, so the drain reads as taking
+    // water from the bottom of the pool however deep the pool is drawn — and so the
+    // assembly cannot run off the bottom of the screen.
+    drainFaucet.bottom = modelViewTransform.modelToViewY(-MAX_POOL_HEIGHT) + 30;
 
     // Water leaving the drain runs off the bottom of the screen; the column is
     // drawn long enough to reach it from wherever the pool floor sits.

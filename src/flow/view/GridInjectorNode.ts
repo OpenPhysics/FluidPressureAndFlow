@@ -16,7 +16,7 @@ import { DerivedProperty, Multilink, type NumberProperty, type TReadOnlyProperty
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Image, Node } from "scenerystack/scenery";
 import { RoundPushButton } from "scenerystack/sun";
-import injectorBulbUrl from "../../../images/injectorBulbCropped.png";
+import { injectorBulbImage } from "../../common/view/images.js";
 import type { Pipe } from "../model/Pipe.js";
 
 /** Radius of the plunger head, view pixels. */
@@ -47,7 +47,7 @@ export class GridInjectorNode extends Node {
 
     const isReadyProperty = new DerivedProperty([cooldownProperty], (cooldown) => cooldown <= 0);
 
-    const bulb = new Image(injectorBulbUrl, { scale: BULB_SCALE });
+    const bulb = new Image(injectorBulbImage, { scale: BULB_SCALE });
 
     const button = new RoundPushButton({
       content: new Circle(PLUNGER_RADIUS, { fill: "red" }),

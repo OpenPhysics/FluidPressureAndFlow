@@ -141,8 +141,11 @@ export class TrapezoidPoolModel extends PoolWithFaucetsModel {
     return TRAPEZOID_LEFT_CHAMBER_CENTER_X;
   }
 
-  /** Below the passage joining the chambers, which is the lowest point. */
+  /**
+   * Clear of the right chamber's wide mouth. Draining from beneath the joining
+   * passage would be the lowest point, but it would also be hidden behind the pool.
+   */
   public override getDrainFaucetX(): number {
-    return TRAPEZOID_LEFT_CHAMBER_CENTER_X + CHAMBER_SEPARATION / 2;
+    return TRAPEZOID_RIGHT_CHAMBER_CENTER_X + WIDTH_AT_WIDE_END / 2 + 0.6;
   }
 }

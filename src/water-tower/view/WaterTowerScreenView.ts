@@ -26,11 +26,12 @@ import { BarometerNode } from "../../common/view/BarometerNode.js";
 import { createBarometerIcon, createSpeedometerIcon } from "../../common/view/createSensorIcons.js";
 import { FluidDensityAccordionBox } from "../../common/view/FluidDensityAccordionBox.js";
 import { FPAFRulerNode } from "../../common/view/FPAFRulerNode.js";
+import { pinAccordionBox } from "../../common/view/pinAccordionBox.js";
 import { SensorToolboxNode } from "../../common/view/SensorToolboxNode.js";
 import { SkyGroundNode } from "../../common/view/SkyGroundNode.js";
 import { UnitSlider } from "../../common/view/UnitSlider.js";
 import { VelocitySensorNode } from "../../common/view/VelocitySensorNode.js";
-import { PANEL_SPACING, SCREEN_VIEW_MARGIN } from "../../FluidPressureAndFlowConstants.js";
+import { LAYOUT_BOUNDS, PANEL_SPACING, SCREEN_VIEW_MARGIN } from "../../FluidPressureAndFlowConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import { MAX_TANK_VOLUME, MIN_TANK_VOLUME } from "../model/WaterTower.js";
 import { FAUCET_POSITION, type WaterTowerModel } from "../model/WaterTowerModel.js";
@@ -48,10 +49,10 @@ import { WaterTowerScreenSummaryContent } from "./WaterTowerScreenSummaryContent
  * the faucet still above it and still on screen. The jet's horizontal range fits
  * comfortably at the same scale.
  */
-const VIEW_SCALE = 15;
+const VIEW_SCALE = 10;
 
 /** View y of the ground line (model y = 0). */
-const GROUND_VIEW_Y = 556;
+const GROUND_VIEW_Y = 350;
 
 /** Model x that lands at the left of the play area. */
 const MODEL_LEFT_X = -6;
@@ -72,7 +73,7 @@ export class WaterTowerScreenView extends ScreenView {
 
   public constructor(model: WaterTowerModel, providedOptions?: WaterTowerScreenViewOptions) {
     const options = optionize<WaterTowerScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
-      { screenSummaryContent: new WaterTowerScreenSummaryContent(model) },
+      { layoutBounds: LAYOUT_BOUNDS, screenSummaryContent: new WaterTowerScreenSummaryContent(model) },
       providedOptions,
     );
     super(options);
@@ -97,6 +98,8 @@ export class WaterTowerScreenView extends ScreenView {
         this.layoutBounds.minY,
         this.layoutBounds.maxY,
         GROUND_VIEW_Y,
+        // Nothing is buried on this screen, so the tower stands on a lawn.
+        { groundStyle: "turf" },
       ),
     );
 
@@ -129,7 +132,10 @@ export class WaterTowerScreenView extends ScreenView {
     const faucet = new FaucetNode(1, model.faucetFlowRateProperty, isFaucetEnabledProperty, {
       horizontalPipeLength: 400,
       verticalPipeLength: 20,
-      scale: 0.45,
+      // Small enough that the whole assembly fits between the top of the screen
+      // and the spout: the spout is pinned to FAUCET_POSITION, which is only just
+      // above the tank's highest reach, so the body has to hang in what is left.
+      scale: 0.35,
       closeOnRelease: false,
       accessibleName: a11y.controls.faucetModeControlStringProperty,
     });
@@ -155,21 +161,19 @@ export class WaterTowerScreenView extends ScreenView {
     const toolbox = new SensorToolboxNode([
       {
         sensors: model.barometers,
-        icon: createBarometerIcon(),
+        icon: createBarometerIcon(common.pressureStringProperty),
         accessibleName: a11y.controls.barometerStringProperty,
         keyboardGrabPosition: keyboardGrabPosition,
         onGrab: (sensor, event) => barometerNodes.get(sensor as Barometer)?.grabFromToolbox(event),
       },
       {
         sensors: model.velocitySensors,
-        icon: createSpeedometerIcon(),
+        icon: createSpeedometerIcon(common.speedStringProperty),
         accessibleName: a11y.controls.speedometerStringProperty,
         keyboardGrabPosition: keyboardGrabPosition,
         onGrab: (sensor, event) => speedometerNodes.get(sensor as VelocitySensor)?.grabFromToolbox(event),
       },
     ]);
-    toolbox.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
-    toolbox.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(toolbox);
 
     for (const barometer of model.barometers) {
@@ -249,7 +253,8 @@ export class WaterTowerScreenView extends ScreenView {
       a11y.controls.faucetModeControlStringProperty,
       a11y.controls.fillButtonStringProperty,
     );
-    faucetControls.left = toolbox.right + PANEL_SPACING * 2;
+    // Beside the faucet it controls, in the top-left corner.
+    faucetControls.left = this.layoutBounds.minX + 150;
     faucetControls.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(faucetControls);
 
@@ -274,8 +279,12 @@ export class WaterTowerScreenView extends ScreenView {
         ],
       }),
     );
-    tankVolumeControl.left = faucetControls.left;
-    tankVolumeControl.top = faucetControls.bottom + PANEL_SPACING;
+    // On the ground below the tower rather than stacked under the faucet controls.
+    // The tank can be raised to most of the screen height, so the whole left-hand
+    // column above the ground line has to stay clear of it — and resizing the tank
+    // is easiest to read with the tank directly above the slider.
+    tankVolumeControl.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
+    tankVolumeControl.top = GROUND_VIEW_Y + PANEL_SPACING;
     this.addChild(tankVolumeControl);
 
     const controlPanel = new WaterTowerControlPanel(
@@ -290,6 +299,12 @@ export class WaterTowerScreenView extends ScreenView {
     controlPanel.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(controlPanel);
 
+    // The tray goes immediately left of the controls: the sky over the middle of
+    // the screen is the only region both instruments can reach without crossing
+    // the tower, and it is the one part of the screen nothing else occupies.
+    toolbox.right = controlPanel.left - PANEL_SPACING;
+    toolbox.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
+
     const fluidDensityBox = new FluidDensityAccordionBox(
       model.fluidDensityProperty,
       model.unitSystemProperty,
@@ -297,18 +312,16 @@ export class WaterTowerScreenView extends ScreenView {
       common,
       a11y.controls.fluidDensitySliderStringProperty,
     );
-    fluidDensityBox.right = this.layoutBounds.maxX - SCREEN_VIEW_MARGIN;
-    fluidDensityBox.bottom = this.layoutBounds.maxY - SCREEN_VIEW_MARGIN - 60;
     this.addChild(fluidDensityBox);
 
     const timeControl = new TimeControlNode(model.isPlayingProperty, {
       timeSpeedProperty: model.timeSpeedProperty,
-      timeSpeeds: [TimeSpeed.NORMAL, TimeSpeed.SLOW],
+      timeSpeeds: [TimeSpeed.SLOW, TimeSpeed.NORMAL],
+      speedRadioButtonGroupPlacement: "left",
+      flowBoxSpacing: 12,
       playPauseStepButtonOptions: {
         stepForwardButtonOptions: { listener: () => model.stepOnce(1 / 60) },
       },
-      centerX: this.layoutBounds.centerX,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
     });
     this.addChild(timeControl);
 
@@ -322,6 +335,16 @@ export class WaterTowerScreenView extends ScreenView {
       bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
     });
     this.addChild(resetAllButton);
+
+    // Bottom row sharing a baseline with Reset All. Same arrangement as the Flow
+    // screen: the two dynamic screens should not put their play/pause button in
+    // different places.
+    pinAccordionBox(fluidDensityBox, () => {
+      fluidDensityBox.right = resetAllButton.left - PANEL_SPACING * 2;
+      fluidDensityBox.bottom = resetAllButton.bottom;
+    });
+    timeControl.centerX = this.layoutBounds.centerX;
+    timeControl.bottom = resetAllButton.bottom;
 
     // ── Traversal order ───────────────────────────────────────────────────────
     // The hole cover first: nothing on this screen happens until it is open.

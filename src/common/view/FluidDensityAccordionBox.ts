@@ -26,6 +26,7 @@ import {
   WATER_DENSITY,
 } from "../../FluidPressureAndFlowConstants.js";
 import type { UnitLabelGroups, UnitSystem } from "../model/units.js";
+import { ACCORDION_BOX_SHRINK_WHEN_COLLAPSED } from "./pinAccordionBox.js";
 import { UnitSlider } from "./UnitSlider.js";
 
 export type FluidDensityLabels = {
@@ -35,6 +36,16 @@ export type FluidDensityLabels = {
   readonly honeyStringProperty: TReadOnlyProperty<string>;
 };
 
+export type FluidDensityAccordionBoxOptions = {
+  /**
+   * Whether the box starts open. It does on Under Pressure, where density is one
+   * of only two things a student can vary and both are meant to be in reach from
+   * the first frame. On the other two screens the pipe or the tank is the story,
+   * so it stays folded away.
+   */
+  readonly expandedDefaultValue?: boolean;
+};
+
 export class FluidDensityAccordionBox extends AccordionBox {
   public constructor(
     fluidDensityProperty: NumberProperty,
@@ -42,6 +53,7 @@ export class FluidDensityAccordionBox extends AccordionBox {
     unitLabelGroups: UnitLabelGroups,
     labels: FluidDensityLabels,
     accessibleName: TReadOnlyProperty<string>,
+    providedOptions?: FluidDensityAccordionBoxOptions,
   ) {
     const slider = new UnitSlider(fluidDensityProperty, DENSITY_RANGE, unitSystemProperty, {
       conversionFor: (system) => system.density,
@@ -60,15 +72,16 @@ export class FluidDensityAccordionBox extends AccordionBox {
         fill: FluidPressureAndFlowColors.textColorProperty,
         maxWidth: 150,
       }),
-      expandedDefaultValue: false,
-      titleAlignX: "left",
+      ...ACCORDION_BOX_SHRINK_WHEN_COLLAPSED,
+      expandedDefaultValue: providedOptions?.expandedDefaultValue ?? false,
+      titleAlignX: "center",
       cornerRadius: PANEL_CORNER_RADIUS,
       fill: FluidPressureAndFlowColors.panelBackgroundColorProperty,
       stroke: FluidPressureAndFlowColors.panelBorderColorProperty,
       contentXMargin: 10,
-      contentYMargin: 8,
+      contentYMargin: 5,
       buttonXMargin: 8,
-      buttonYMargin: 6,
+      buttonYMargin: 4,
       expandCollapseButtonOptions: { sideLength: 16 },
     });
   }

@@ -1,21 +1,26 @@
 /**
  * FlowControlPanel.ts
  *
- * The Flow screen's right-hand panel: the ruler, friction, flux meter and marker
- * dots, and the unit-system chooser.
+ * The Flow screen's right-hand controls: the ruler, friction, flux meter and
+ * marker dots, and the unit-system chooser.
  *
  * Friction sits with the display toggles so the optional viscosity model is easy
  * to compare with the ideal-flow case. Unlike the original implementation, it
  * changes both pressure and flux; see doc/model.md.
+ *
+ * The unit system gets its own box, as on the other two screens: it is set once
+ * and left alone, and separating it keeps the toggles above it at a constant
+ * height however tall the unit list grows in translation.
  */
 
 import type { BooleanProperty, EnumerationProperty, TReadOnlyProperty } from "scenerystack/axon";
-import { HSeparator, Text, VBox } from "scenerystack/scenery";
+import { Text, VBox } from "scenerystack/scenery";
 import { Checkbox } from "scenerystack/sun";
 import { FluidPressureAndFlowPanel } from "../../common/FluidPressureAndFlowPanel.js";
 import type { UnitSystem } from "../../common/model/units.js";
 import { UnitsControlPanel, type UnitsControlPanelLabels } from "../../common/view/UnitsControlPanel.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { PANEL_SPACING } from "../../FluidPressureAndFlowConstants.js";
 
 const LABEL_FONT = "13px sans-serif";
 
@@ -37,7 +42,7 @@ export type FlowControlPanelAccessibleNames = {
   readonly unitsControlStringProperty: TReadOnlyProperty<string>;
 };
 
-export class FlowControlPanel extends FluidPressureAndFlowPanel {
+export class FlowControlPanel extends VBox {
   public constructor(
     isRulerVisibleProperty: BooleanProperty,
     isFrictionEnabledProperty: BooleanProperty,
@@ -62,13 +67,12 @@ export class FlowControlPanel extends FluidPressureAndFlowPanel {
         { boxWidth: 16, accessibleName: accessibleName },
       );
 
-    super(
+    const toggles = new FluidPressureAndFlowPanel(
       new VBox({
         align: "left",
         spacing: 8,
         children: [
           checkbox(isRulerVisibleProperty, labels.rulerStringProperty, accessibleNames.rulerCheckboxStringProperty),
-          checkbox(areDotsVisibleProperty, labels.dotsStringProperty, accessibleNames.dotsCheckboxStringProperty),
           checkbox(
             isFrictionEnabledProperty,
             labels.frictionStringProperty,
@@ -79,11 +83,17 @@ export class FlowControlPanel extends FluidPressureAndFlowPanel {
             labels.fluxMeterStringProperty,
             accessibleNames.fluxMeterCheckboxStringProperty,
           ),
-          new HSeparator({ stroke: FluidPressureAndFlowColors.panelBorderColorProperty }),
-          new UnitsControlPanel(unitSystemProperty, labels, accessibleNames.unitsControlStringProperty),
+          checkbox(areDotsVisibleProperty, labels.dotsStringProperty, accessibleNames.dotsCheckboxStringProperty),
         ],
       }),
       { minWidth: CONTENT_WIDTH },
     );
+
+    const units = new FluidPressureAndFlowPanel(
+      new UnitsControlPanel(unitSystemProperty, labels, accessibleNames.unitsControlStringProperty),
+      { minWidth: CONTENT_WIDTH },
+    );
+
+    super({ align: "right", spacing: PANEL_SPACING, children: [toggles, units] });
   }
 }

@@ -19,7 +19,6 @@ import { Node } from "scenerystack/scenery";
 import { ResetAllButton, TimeControlNode, TimeSpeed } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/FluidPressureAndFlowButtonOptions.js";
-import { FluidPressureAndFlowPanel } from "../../common/FluidPressureAndFlowPanel.js";
 import type { Barometer } from "../../common/model/Barometer.js";
 import { formatValue } from "../../common/model/units.js";
 import type { VelocitySensor } from "../../common/model/VelocitySensor.js";
@@ -27,20 +26,21 @@ import { BarometerNode } from "../../common/view/BarometerNode.js";
 import { createBarometerIcon, createSpeedometerIcon } from "../../common/view/createSensorIcons.js";
 import { FluidDensityAccordionBox } from "../../common/view/FluidDensityAccordionBox.js";
 import { FPAFRulerNode } from "../../common/view/FPAFRulerNode.js";
+import { pinAccordionBox } from "../../common/view/pinAccordionBox.js";
 import { SensorToolboxNode } from "../../common/view/SensorToolboxNode.js";
 import { SkyGroundNode } from "../../common/view/SkyGroundNode.js";
-import { UnitSlider } from "../../common/view/UnitSlider.js";
 import { VelocitySensorNode } from "../../common/view/VelocitySensorNode.js";
 import {
   FLOW_MODEL_VIEW_ANCHOR,
-  FLOW_RATE_RANGE,
   FLOW_VIEW_SCALE,
+  LAYOUT_BOUNDS,
   PANEL_SPACING,
   SCREEN_VIEW_MARGIN,
 } from "../../FluidPressureAndFlowConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { FlowModel } from "../model/FlowModel.js";
 import { FlowControlPanel } from "./FlowControlPanel.js";
+import { FlowRateAccordionBox } from "./FlowRateAccordionBox.js";
 import { FlowScreenSummaryContent } from "./FlowScreenSummaryContent.js";
 import { FluxMeterNode } from "./FluxMeterNode.js";
 import { GridInjectorNode } from "./GridInjectorNode.js";
@@ -69,7 +69,7 @@ export class FlowScreenView extends ScreenView {
 
   public constructor(model: FlowModel, providedOptions?: FlowScreenViewOptions) {
     const options = optionize<FlowScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
-      { screenSummaryContent: new FlowScreenSummaryContent(model) },
+      { layoutBounds: LAYOUT_BOUNDS, screenSummaryContent: new FlowScreenSummaryContent(model) },
       providedOptions,
     );
     super(options);
@@ -144,7 +144,7 @@ export class FlowScreenView extends ScreenView {
       modelViewTransform.viewToModelX(this.layoutBounds.maxX - 10),
       MAX_TOOL_ALTITUDE,
     );
-    const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.minX + 110), 1.4);
+    const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.centerX), 1.4);
 
     const sensorLayer = new Node();
     toolsLayer.addChild(sensorLayer);
@@ -155,21 +155,19 @@ export class FlowScreenView extends ScreenView {
     const toolbox = new SensorToolboxNode([
       {
         sensors: model.barometers,
-        icon: createBarometerIcon(),
+        icon: createBarometerIcon(common.pressureStringProperty),
         accessibleName: a11y.controls.barometerStringProperty,
         keyboardGrabPosition: keyboardGrabPosition,
         onGrab: (sensor, event) => barometerNodes.get(sensor as Barometer)?.grabFromToolbox(event),
       },
       {
         sensors: model.velocitySensors,
-        icon: createSpeedometerIcon(),
+        icon: createSpeedometerIcon(common.speedStringProperty),
         accessibleName: a11y.controls.speedometerStringProperty,
         keyboardGrabPosition: keyboardGrabPosition,
         onGrab: (sensor, event) => speedometerNodes.get(sensor as VelocitySensor)?.grabFromToolbox(event),
       },
     ]);
-    toolbox.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
-    toolbox.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(toolbox);
 
     for (const barometer of model.barometers) {
@@ -224,17 +222,14 @@ export class FlowScreenView extends ScreenView {
     toolsLayer.addChild(ruler);
 
     // ── Controls ──────────────────────────────────────────────────────────────
-    const flowRateControl = new FluidPressureAndFlowPanel(
-      new UnitSlider(model.pipe.flowRateProperty, FLOW_RATE_RANGE, model.unitSystemProperty, {
-        conversionFor: (system) => system.flowRate,
-        unitsLabelFor: (system) => system.labels(unitLabelGroups).flowRateStringProperty,
-        majorTicks: [],
-        accessibleName: a11y.controls.flowRateSliderStringProperty,
-      }),
+    const flowRateBox = new FlowRateAccordionBox(
+      model.pipe.flowRateProperty,
+      model.unitSystemProperty,
+      unitLabelGroups,
+      screenStrings.flowRateStringProperty,
+      a11y.controls.flowRateSliderStringProperty,
     );
-    flowRateControl.left = toolbox.right + PANEL_SPACING * 2;
-    flowRateControl.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
-    this.addChild(flowRateControl);
+    this.addChild(flowRateBox);
 
     const controlPanel = new FlowControlPanel(
       this.isRulerVisibleProperty,
@@ -249,6 +244,12 @@ export class FlowScreenView extends ScreenView {
     controlPanel.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(controlPanel);
 
+    // The tray goes immediately left of the controls rather than in the far
+    // corner: both instruments are dragged down onto the pipe, which runs across
+    // the middle of the screen.
+    toolbox.right = controlPanel.left - PANEL_SPACING;
+    toolbox.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
+
     const fluidDensityBox = new FluidDensityAccordionBox(
       model.fluidDensityProperty,
       model.unitSystemProperty,
@@ -256,21 +257,19 @@ export class FlowScreenView extends ScreenView {
       common,
       a11y.controls.fluidDensitySliderStringProperty,
     );
-    fluidDensityBox.right = this.layoutBounds.maxX - SCREEN_VIEW_MARGIN;
-    fluidDensityBox.bottom = this.layoutBounds.maxY - SCREEN_VIEW_MARGIN - 60;
     this.addChild(fluidDensityBox);
 
     const timeControl = new TimeControlNode(model.isPlayingProperty, {
       timeSpeedProperty: model.timeSpeedProperty,
-      timeSpeeds: [TimeSpeed.NORMAL, TimeSpeed.SLOW],
+      timeSpeeds: [TimeSpeed.SLOW, TimeSpeed.NORMAL],
+      speedRadioButtonGroupPlacement: "left",
+      flowBoxSpacing: 12,
       playPauseStepButtonOptions: {
         // One frame at normal speed, so a step is the same size however the
         // speed radio buttons are set — a step is for inspecting a moment, not
         // for advancing at the chosen rate.
         stepForwardButtonOptions: { listener: () => model.stepOnce(1 / 60) },
       },
-      centerX: this.layoutBounds.centerX,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
     });
     this.addChild(timeControl);
 
@@ -285,13 +284,27 @@ export class FlowScreenView extends ScreenView {
     });
     this.addChild(resetAllButton);
 
+    // Bottom row: the flow-rate slider at the far left, time controls centred, and
+    // fluid density beside Reset All. Everything shares a baseline, and the two
+    // accordion boxes grow upward from it rather than pushing the row around.
+    pinAccordionBox(fluidDensityBox, () => {
+      fluidDensityBox.right = resetAllButton.left - PANEL_SPACING * 2;
+      fluidDensityBox.bottom = resetAllButton.bottom;
+    });
+    pinAccordionBox(flowRateBox, () => {
+      flowRateBox.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
+      flowRateBox.bottom = resetAllButton.bottom;
+    });
+    timeControl.centerX = this.layoutBounds.centerX;
+    timeControl.bottom = resetAllButton.bottom;
+
     toolsLayer.moveToFront();
 
     // ── Traversal order ───────────────────────────────────────────────────────
     this.addChild(
       new Node({
         pdomOrder: [
-          flowRateControl,
+          flowRateBox,
           pipeHandles,
           gridInjector,
           toolbox,

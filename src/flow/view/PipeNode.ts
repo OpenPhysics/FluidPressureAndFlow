@@ -12,11 +12,8 @@ import { type Bounds2, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Image, Node, Path } from "scenerystack/scenery";
-import pipeLeftBackUrl from "../../../images/pipeLeftBack.png";
-import pipeLeftFrontUrl from "../../../images/pipeLeftFront.png";
-import pipeRightUrl from "../../../images/pipeRight.png";
-import pipeSegmentUrl from "../../../images/pipeSegment.png";
 import { getFluidColor } from "../../common/model/fluidColor.js";
+import { pipeLeftBackImage, pipeLeftFrontImage, pipeRightImage, pipeSegmentImage } from "../../common/view/images.js";
 import { FLOW_PARTICLE_CANVAS_BOUNDS } from "../../FluidPressureAndFlowConstants.js";
 import type { FlowModel } from "../model/FlowModel.js";
 import type { Pipe, WallSample } from "../model/Pipe.js";
@@ -70,8 +67,8 @@ export class PipeNode extends Node {
     const leftSection = pipe.crossSections[0] as (typeof pipe.crossSections)[number];
     const rightSection = pipe.crossSections[pipe.crossSections.length - 1] as (typeof pipe.crossSections)[number];
 
-    const leftPipeHead = new Image(pipeLeftFrontUrl);
-    const leftPipeSegment = new Image(pipeSegmentUrl, {
+    const leftPipeHead = new Image(pipeLeftFrontImage);
+    const leftPipeSegment = new Image(pipeSegmentImage, {
       right: leftPipeHead.left + LEFT_SEGMENT_GAP,
       scale: new Vector2(PIPE_SEGMENT_X_SCALE, 1),
     });
@@ -80,10 +77,10 @@ export class PipeNode extends Node {
       x: LEFT_PIPE_X,
     });
 
-    const leftPipeBack = new Image(pipeLeftBackUrl, { x: LEFT_PIPE_X });
+    const leftPipeBack = new Image(pipeLeftBackImage, { x: LEFT_PIPE_X });
 
-    const rightPipeHead = new Image(pipeRightUrl);
-    const rightPipeSegment = new Image(pipeSegmentUrl, {
+    const rightPipeHead = new Image(pipeRightImage);
+    const rightPipeSegment = new Image(pipeSegmentImage, {
       left: rightPipeHead.right - RIGHT_SEGMENT_OVERLAP,
       scale: new Vector2(PIPE_SEGMENT_X_SCALE, 1),
     });

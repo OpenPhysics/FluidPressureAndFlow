@@ -27,6 +27,15 @@ export const SQUARE_POOL_MAX_X = SQUARE_POOL_MIN_X + SQUARE_POOL_WIDTH;
 /** Where the fill tap pours in, just inside the left wall. */
 export const SQUARE_POOL_INPUT_FAUCET_X = SQUARE_POOL_MIN_X + 0.2;
 
+/**
+ * Where the drain empties, just outside the right wall.
+ *
+ * Outside rather than under the middle: a drain beneath the pool floor is hidden
+ * by the pool itself, and the point of drawing it is that a student can see which
+ * tap is open and watch the water leave.
+ */
+export const SQUARE_POOL_DRAIN_FAUCET_X = SQUARE_POOL_MAX_X + 0.6;
+
 export class SquarePoolModel extends PoolWithFaucetsModel {
   protected override createContainerShape(): Shape {
     return Shape.rect(SQUARE_POOL_MIN_X, -MAX_POOL_HEIGHT, SQUARE_POOL_WIDTH, MAX_POOL_HEIGHT);
@@ -45,6 +54,6 @@ export class SquarePoolModel extends PoolWithFaucetsModel {
   }
 
   public override getDrainFaucetX(): number {
-    return SQUARE_POOL_MIN_X + SQUARE_POOL_WIDTH / 2;
+    return SQUARE_POOL_DRAIN_FAUCET_X;
   }
 }

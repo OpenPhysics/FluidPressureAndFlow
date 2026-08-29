@@ -26,7 +26,13 @@ import { HOLE_SIZE, MAX_TANK_BASE_Y, MIN_TANK_BASE_Y, TANK_HEIGHT, type WaterTow
 const LEG_SPLAY = 3;
 
 /** Thickness of the tank wall and the legs, view pixels. */
-const STRUCTURE_LINE_WIDTH = 3;
+const STRUCTURE_LINE_WIDTH = 4;
+
+/** Thickness of the cross-bracing between the legs. Thinner than the legs it braces. */
+const BRACE_LINE_WIDTH = 2;
+
+/** Height of the lid on top of the tank, view pixels. */
+const LID_HEIGHT = 8;
 
 /** Metres the tank moves per arrow-key press. */
 const KEYBOARD_DRAG_SPEED = 4;
@@ -44,16 +50,25 @@ export class WaterTowerNode extends Node {
     super();
 
     const legs = new Path(null, {
-      stroke: FluidPressureAndFlowColors.poolEdgeColorProperty,
+      stroke: FluidPressureAndFlowColors.towerStructureColorProperty,
       lineWidth: STRUCTURE_LINE_WIDTH,
+    });
+    const braces = new Path(null, {
+      stroke: FluidPressureAndFlowColors.towerStructureColorProperty,
+      lineWidth: BRACE_LINE_WIDTH,
     });
     const water = new Path(null, { fill: getFluidColor(fluidDensityProperty.value).toCSS() });
     // The body is filled, the wall is only stroked, and the wall is drawn over
     // the water — so the tank still reads as a container when it is full.
     const tankBody = new Path(null, { fill: FluidPressureAndFlowColors.poolLiningColorProperty });
     const tankWall = new Path(null, {
-      stroke: FluidPressureAndFlowColors.poolEdgeColorProperty,
+      stroke: FluidPressureAndFlowColors.towerStructureColorProperty,
       lineWidth: STRUCTURE_LINE_WIDTH,
+    });
+    const lid = new Rectangle(0, 0, 0, 0, {
+      fill: FluidPressureAndFlowColors.towerTrimColorProperty,
+      stroke: FluidPressureAndFlowColors.towerStructureColorProperty,
+      lineWidth: 2,
     });
     const cover = new Rectangle(0, 0, 0, 0, 2, 2, {
       fill: FluidPressureAndFlowColors.massColorProperty,
@@ -65,7 +80,7 @@ export class WaterTowerNode extends Node {
       accessibleName: coverAccessibleName,
     });
 
-    this.children = [legs, tankBody, water, tankWall, cover];
+    this.children = [legs, braces, tankBody, water, tankWall, lid, cover];
 
     const layout = () => {
       const base = waterTower.baseCenterProperty.value;
@@ -82,22 +97,38 @@ export class WaterTowerNode extends Node {
       water.shape = Shape.rect(leftX, surfaceY, rightX - leftX, Math.max(0, baseY - surfaceY));
       water.fill = getFluidColor(fluidDensityProperty.value).toCSS();
 
+      lid.setRect(leftX - 3, topY - LID_HEIGHT, rightX - leftX + 6, LID_HEIGHT);
+
       // Legs from the tank's underside out to the ground, splayed for stability.
       const groundY = modelViewTransform.modelToViewY(0);
       const legShape = new Shape();
+      const legTopX: number[] = [];
+      const legBottomX: number[] = [];
       for (const side of [-1, 1]) {
         const topX = modelViewTransform.modelToViewX(base.x + (side * radius) / 2);
         const bottomX = modelViewTransform.modelToViewX(base.x + side * (radius / 2 + LEG_SPLAY));
+        legTopX.push(topX);
+        legBottomX.push(bottomX);
         legShape.moveTo(topX, baseY);
         legShape.lineTo(bottomX, groundY);
       }
-      // A crossbeam, so the legs read as a structure rather than two sticks.
-      const beamY = (baseY + groundY) / 2;
-      const beamHalfWidth = (rightX - leftX) / 4 + (modelViewTransform.modelToViewDeltaX(LEG_SPLAY) * 1) / 2;
-      const centerX = modelViewTransform.modelToViewX(base.x);
-      legShape.moveTo(centerX - beamHalfWidth, beamY);
-      legShape.lineTo(centerX + beamHalfWidth, beamY);
       legs.shape = legShape;
+
+      // A horizontal beam and an X between the legs, so the tower reads as a
+      // braced structure standing up to the weight rather than two bent sticks.
+      const beamY = (baseY + groundY) / 2;
+      const braceShape = new Shape();
+      const edgeAt = (side: 0 | 1, y: number) => {
+        const fraction = (y - baseY) / (groundY - baseY);
+        return (legTopX[side] as number) + ((legBottomX[side] as number) - (legTopX[side] as number)) * fraction;
+      };
+      braceShape.moveTo(edgeAt(0, beamY), beamY);
+      braceShape.lineTo(edgeAt(1, beamY), beamY);
+      braceShape.moveTo(legTopX[0] as number, baseY);
+      braceShape.lineTo(legBottomX[1] as number, groundY);
+      braceShape.moveTo(legTopX[1] as number, baseY);
+      braceShape.lineTo(legBottomX[0] as number, groundY);
+      braces.shape = braceShape;
 
       // The cover sits over the hole in the right-hand wall, and slides clear of
       // it when the hole is open.

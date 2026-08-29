@@ -70,7 +70,7 @@ const MAX_FAUCET_FLOW_RATE = 30;
  * Where the faucet's spout is, model coordinates. Above the tank's highest
  * position, so it still pours *into* the tank when the tank is raised all the way.
  */
-export const FAUCET_POSITION = new Vector2(0, 29.5);
+export const FAUCET_POSITION = new Vector2(0, 27);
 
 /** Altitude at which a falling drop is considered to have landed and is removed. */
 const GROUND_Y = 0;

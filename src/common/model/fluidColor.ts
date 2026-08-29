@@ -4,10 +4,14 @@
  * Maps fluid density onto the colour the fluid is drawn in.
  *
  * The density slider is continuous, so the fluid has to shade continuously too:
- * gasoline is a pale yellow-green, water the familiar blue, honey a dark amber.
- * Interpolating gives the student a second, non-numeric channel telling them the
- * fluid changed — which matters because on the Under Pressure screen the only
- * other evidence is a barometer digit.
+ * gasoline is a colourless grey, water a bright cyan, honey an amber. Interpolating
+ * gives the student a second, non-numeric channel telling them the fluid changed —
+ * which matters because on the Under Pressure screen the only other evidence is a
+ * barometer digit.
+ *
+ * The three anchor colours are PhET's, carried over from the Java sim. They are
+ * more saturated than a naturalistic palette would be, deliberately: the fluid is
+ * read at a glance through a pool wall and behind tracer dots.
  *
  * Mystery fluids ignore density entirely and return a fixed purple, so the
  * colour cannot be used to reverse-engineer the hidden value.
@@ -17,13 +21,13 @@ import { Color } from "scenerystack/scenery";
 import { GASOLINE_DENSITY, HONEY_DENSITY, WATER_DENSITY } from "../../FluidPressureAndFlowConstants.js";
 
 /** Colour of the lightest selectable fluid (gasoline, 700 kg/m³). */
-const GASOLINE_COLOR = new Color(230, 235, 155);
+const GASOLINE_COLOR = new Color(149, 142, 139);
 
 /** Colour of water (1000 kg/m³), the default. */
-const WATER_COLOR = new Color(112, 197, 217);
+const WATER_COLOR = new Color(20, 244, 255);
 
 /** Colour of the densest selectable fluid (honey, 1420 kg/m³). */
-const HONEY_COLOR = new Color(160, 110, 30);
+const HONEY_COLOR = new Color(255, 191, 0);
 
 /**
  * The colour of a mystery fluid. Deliberately uninformative: all three mystery

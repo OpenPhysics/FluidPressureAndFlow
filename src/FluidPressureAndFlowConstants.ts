@@ -28,8 +28,26 @@ import FluidPressureAndFlowNamespace from "./FluidPressureAndFlowNamespace.js";
 
 // ── Layout / chrome (screen pixels) ───────────────────────────────────────────
 
-/** Margin between the screen edge and edge-anchored controls (e.g. Reset All). */
-export const SCREEN_VIEW_MARGIN = 20;
+/**
+ * Play-area bounds for all three screens.
+ *
+ * Not the modern 1024×618 default. Every piece of geometry in this sim is
+ * calibrated against PhET's, in view pixels: the ground line, the metres-per-pixel
+ * of each screen, the pipe-head insets, the pool sizes. Those numbers only
+ * compose correctly at the size they were drawn for, and the two aspect ratios
+ * differ enough (1.52 vs 1.66) that no single rescaling reproduces the layout.
+ * Upstream pins the same bounds for the same reason.
+ */
+export const LAYOUT_BOUNDS = new Bounds2(0, 0, 768, 504);
+
+/**
+ * Margin between the screen edge and edge-anchored controls (e.g. Reset All).
+ *
+ * Tight, because on Under Pressure the right-hand column is nearly full: a tools
+ * panel, a units chooser and two expanded sliders stacked above Reset All. Every
+ * pixel spent on the outer margin is one the sliders do not have.
+ */
+export const SCREEN_VIEW_MARGIN = 10;
 
 /** Corner radius shared by control panels and dialogs. */
 export const PANEL_CORNER_RADIUS = 6;
@@ -130,6 +148,7 @@ export const MAX_DT = 0.04;
 export const SLOW_MOTION_FACTOR = 0.33;
 
 FluidPressureAndFlowNamespace.register("FluidPressureAndFlowConstants", {
+  LAYOUT_BOUNDS,
   SCREEN_VIEW_MARGIN,
   PANEL_CORNER_RADIUS,
   PANEL_SPACING,
