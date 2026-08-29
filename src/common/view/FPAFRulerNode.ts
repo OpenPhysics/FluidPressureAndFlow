@@ -16,7 +16,7 @@ import { type EnumerationProperty, Multilink, Property, type TReadOnlyProperty }
 import type { Bounds2, Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, Font, KeyboardDragListener, Node } from "scenerystack/scenery";
-import { RulerNode } from "scenerystack/scenery-phet";
+import { CloseButton, RulerNode } from "scenerystack/scenery-phet";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { toDisplayValue, type UnitLabelGroups, type UnitSystem } from "../model/units.js";
@@ -40,6 +40,11 @@ const MIN_MAJOR_TICK_SPACING = 34;
 /** Metres the ruler moves per arrow-key press. */
 const KEYBOARD_DRAG_SPEED = 3;
 
+export type FPAFRulerNodeOptions = {
+  /** Hides the ruler when pressed, as in the published Under Pressure sim. */
+  readonly onClose?: () => void;
+};
+
 export class FPAFRulerNode extends Node {
   private readonly disposeFPAFRulerNode: () => void;
 
@@ -60,6 +65,7 @@ export class FPAFRulerNode extends Node {
     modelViewTransform: ModelViewTransform2,
     dragBounds: Bounds2,
     accessibleName: TReadOnlyProperty<string>,
+    providedOptions?: FPAFRulerNodeOptions,
   ) {
     super({
       cursor: "pointer",
@@ -72,14 +78,14 @@ export class FPAFRulerNode extends Node {
 
     // Rebuilt rather than relabelled on a unit change: the graduation changes
     // too, since four metres and thirteen feet are not the same ruler.
+    const rulerLayer = new Node();
+    this.addChild(rulerLayer);
+
     const rebuild = () => {
       const system = unitSystemProperty.value;
       const unitsProperty = system.labels(unitLabelGroups).distanceStringProperty;
       const totalInUnits = toDisplayValue(system.distance, lengthInMeters);
 
-      // Pick the coarsest graduation that still fits: 4 m reads naturally at one
-      // tick per metre, but the same ruler is 13 ft, and thirteen labels in that
-      // space collide with each other and with the units label.
       const interval =
         TICK_INTERVALS.find((candidate) => (viewLength * candidate) / totalInUnits >= MIN_MAJOR_TICK_SPACING) ??
         (TICK_INTERVALS[TICK_INTERVALS.length - 1] as number);
@@ -98,18 +104,13 @@ export class FPAFRulerNode extends Node {
         insetsWidth: 0,
         minorTicksPerMajorTick: 4,
         tickMarksOnBottom: false,
-        // Second tick from the zero end, where there is always room; the last
-        // tick may sit hard against the end of a ruler that does not divide
-        // evenly into whole units.
         unitsMajorTickIndex: 1,
       });
 
-      // Built horizontally, then stood on end so its zero mark is at the top and
-      // the numbers read downward — the direction depth is measured in.
       ruler.rotate(Math.PI / 2);
 
-      const previous = this.children[0];
-      this.children = [ruler];
+      const previous = rulerLayer.children[0];
+      rulerLayer.children = [ruler];
       previous?.dispose();
     };
 
@@ -121,11 +122,29 @@ export class FPAFRulerNode extends Node {
       ],
       rebuild,
     );
+    rebuild();
 
     const updatePosition = (position: Vector2) => {
       this.leftTop = modelViewTransform.modelToViewPosition(position);
     };
     positionProperty.link(updatePosition);
+
+    let closeButton: CloseButton | null = null;
+    let positionCloseButton: ((position: Vector2) => void) | null = null;
+    if (providedOptions?.onClose) {
+      const button = new CloseButton({
+        iconLength: 12,
+        listener: providedOptions.onClose,
+      });
+      closeButton = button;
+      positionCloseButton = (position: Vector2) => {
+        const viewPosition = modelViewTransform.modelToViewPosition(position);
+        button.left = viewPosition.x - RULER_WIDTH;
+        button.bottom = viewPosition.y;
+      };
+      positionProperty.link(positionCloseButton);
+      this.addChild(button);
+    }
 
     const dragBoundsProperty = new Property(dragBounds);
 
@@ -154,8 +173,13 @@ export class FPAFRulerNode extends Node {
     this.disposeFPAFRulerNode = () => {
       rebuildMultilink.dispose();
       positionProperty.unlink(updatePosition);
+      if (positionCloseButton) {
+        positionProperty.unlink(positionCloseButton);
+      }
       dragListener.dispose();
       keyboardDragListener.dispose();
+      closeButton?.dispose();
+      rulerLayer.dispose();
     };
   }
 

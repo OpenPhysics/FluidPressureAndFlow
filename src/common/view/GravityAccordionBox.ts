@@ -32,6 +32,8 @@ export type GravityLabels = {
 };
 
 export class GravityAccordionBox extends AccordionBox {
+  public readonly unitSlider: UnitSlider;
+
   public constructor(
     gravityProperty: NumberProperty,
     unitSystemProperty: EnumerationProperty<UnitSystem>,
@@ -58,5 +60,7 @@ export class GravityAccordionBox extends AccordionBox {
       // the two quantities the screen exists to let a student vary.
       expandedDefaultValue: true,
     });
+
+    this.unitSlider = slider;
   }
 }

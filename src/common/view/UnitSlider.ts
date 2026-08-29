@@ -139,6 +139,11 @@ export class UnitSlider extends VBox {
     };
   }
 
+  /** Greys out the readout and track without removing them — used by the mystery scene. */
+  public setSliderEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
   public override dispose(): void {
     this.disposeUnitSlider();
     super.dispose();

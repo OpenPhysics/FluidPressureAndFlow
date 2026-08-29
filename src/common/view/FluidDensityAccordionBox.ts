@@ -43,6 +43,8 @@ export type FluidDensityAccordionBoxOptions = {
 };
 
 export class FluidDensityAccordionBox extends AccordionBox {
+  public readonly unitSlider: UnitSlider;
+
   public constructor(
     fluidDensityProperty: NumberProperty,
     unitSystemProperty: EnumerationProperty<UnitSystem>,
@@ -68,5 +70,7 @@ export class FluidDensityAccordionBox extends AccordionBox {
       ...ACCORDION_BOX_CHROME_OPTIONS,
       expandedDefaultValue: providedOptions?.expandedDefaultValue ?? false,
     });
+
+    this.unitSlider = slider;
   }
 }

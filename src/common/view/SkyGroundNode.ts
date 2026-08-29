@@ -22,6 +22,7 @@
  * makes in it, so the gradients are built here against the sim's colour profile.
  */
 
+import type { BooleanProperty } from "scenerystack/axon";
 import { Shape } from "scenerystack/kite";
 import { LinearGradient, Node, Path, Rectangle } from "scenerystack/scenery";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
@@ -54,6 +55,11 @@ export type GroundStyle = "earth" | "turf";
 export type SkyGroundNodeOptions = {
   /** Defaults to "earth", the buried-scene ground. */
   readonly groundStyle?: GroundStyle;
+  /**
+   * When provided and false, the sky turns black — the published PhET cue that
+   * air pressure has been switched off.
+   */
+  readonly isAtmosphereProperty?: BooleanProperty;
 };
 
 export class SkyGroundNode extends Node {
@@ -61,6 +67,9 @@ export class SkyGroundNode extends Node {
   private readonly extent: { minX: number; maxX: number };
   private readonly hasGrass: boolean;
   private readonly openingsLayer = new Node();
+  private readonly skyRectangle: Rectangle;
+  private readonly skyGradient: LinearGradient;
+  private readonly disposeSkyGroundNode: (() => void) | null;
 
   /**
    * @param minX - left edge in view coordinates
@@ -86,10 +95,12 @@ export class SkyGroundNode extends Node {
 
     const width = maxX - minX;
 
-    const sky = new Rectangle(minX, minY, width, groundY - minY, {
-      fill: new LinearGradient(0, Math.max(minY, groundY - SKY_GRADIENT_HEIGHT), 0, groundY)
-        .addColorStop(0, FluidPressureAndFlowColors.skyTopColorProperty)
-        .addColorStop(1, FluidPressureAndFlowColors.backgroundColorProperty),
+    this.skyGradient = new LinearGradient(0, Math.max(minY, groundY - SKY_GRADIENT_HEIGHT), 0, groundY)
+      .addColorStop(0, FluidPressureAndFlowColors.skyTopColorProperty)
+      .addColorStop(1, FluidPressureAndFlowColors.backgroundColorProperty);
+
+    this.skyRectangle = new Rectangle(minX, minY, width, groundY - minY, {
+      fill: this.skyGradient,
     });
 
     const ground = new Rectangle(minX, groundY, width, maxY - groundY, {
@@ -103,10 +114,29 @@ export class SkyGroundNode extends Node {
               .addColorStop(1, FluidPressureAndFlowColors.turfBottomColorProperty),
     });
 
-    this.addChild(sky);
+    this.addChild(this.skyRectangle);
     this.addChild(ground);
     this.addChild(this.openingsLayer);
     this.setOpenings([]);
+
+    const isAtmosphereProperty = providedOptions?.isAtmosphereProperty;
+    if (isAtmosphereProperty) {
+      const updateSky = (isAtmosphere: boolean) => {
+        this.skyRectangle.fill = isAtmosphere ? this.skyGradient : "#000000";
+      };
+      isAtmosphereProperty.link(updateSky);
+      updateSky(isAtmosphereProperty.value);
+      this.disposeSkyGroundNode = () => {
+        isAtmosphereProperty.unlink(updateSky);
+      };
+    } else {
+      this.disposeSkyGroundNode = null;
+    }
+  }
+
+  public override dispose(): void {
+    this.disposeSkyGroundNode?.();
+    super.dispose();
   }
 
   /**

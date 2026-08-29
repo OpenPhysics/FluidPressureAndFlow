@@ -37,7 +37,7 @@ const CHAMBER_HEIGHT = 1.25;
 const PASSAGE_SIZE = 0.5;
 
 /** Width of the narrow (left) opening, metres. */
-const LEFT_OPENING_WIDTH = 0.5;
+export const CHAMBER_LEFT_OPENING_WIDTH = 0.5;
 
 /** Width of the wide (right) opening, metres. */
 const RIGHT_OPENING_WIDTH = 2.5;
@@ -47,7 +47,7 @@ const RIGHT_OPENING_WIDTH = 2.5;
  *
  * The ratio of *widths*, not of areas — see the class comment and doc/model.md.
  */
-const LENGTH_RATIO = RIGHT_OPENING_WIDTH / LEFT_OPENING_WIDTH;
+const LENGTH_RATIO = RIGHT_OPENING_WIDTH / CHAMBER_LEFT_OPENING_WIDTH;
 
 /** Left chamber footprint along the floor, metres. */
 const LEFT_CHAMBER_MIN_X = -4.5;
@@ -60,7 +60,7 @@ const RIGHT_CHAMBER_WIDTH = CHAMBER_HEIGHT;
 const RIGHT_CHAMBER_CENTER_X = RIGHT_CHAMBER_MIN_X + RIGHT_CHAMBER_WIDTH / 2;
 
 /** Altitude of the floor of both openings — the top of the chambers, metres. */
-const OPENING_FLOOR_Y = -MAX_POOL_HEIGHT + CHAMBER_HEIGHT;
+export const CHAMBER_OPENING_FLOOR_Y = -MAX_POOL_HEIGHT + CHAMBER_HEIGHT;
 
 /** Water standing in each opening when nothing is pressing on it, metres. */
 const RESTING_COLUMN_HEIGHT = 1;
@@ -152,9 +152,9 @@ export class ChamberPoolModel extends Pool {
   /** The narrow shaft rising from the left chamber to ground level. */
   private static getLeftOpeningShape(): Shape {
     return Shape.rect(
-      LEFT_CHAMBER_CENTER_X - LEFT_OPENING_WIDTH / 2,
-      OPENING_FLOOR_Y,
-      LEFT_OPENING_WIDTH,
+      LEFT_CHAMBER_CENTER_X - CHAMBER_LEFT_OPENING_WIDTH / 2,
+      CHAMBER_OPENING_FLOOR_Y,
+      CHAMBER_LEFT_OPENING_WIDTH,
       MAX_POOL_HEIGHT - CHAMBER_HEIGHT,
     );
   }
@@ -163,7 +163,7 @@ export class ChamberPoolModel extends Pool {
   private static getRightOpeningShape(): Shape {
     return Shape.rect(
       RIGHT_CHAMBER_CENTER_X - RIGHT_OPENING_WIDTH / 2,
-      OPENING_FLOOR_Y,
+      CHAMBER_OPENING_FLOOR_Y,
       RIGHT_OPENING_WIDTH,
       MAX_POOL_HEIGHT - CHAMBER_HEIGHT,
     );
@@ -182,14 +182,19 @@ export class ChamberPoolModel extends Pool {
    * the extra width of the shaft is where the weights sit.
    */
   public static createLeftColumnWaterShape(leftColumnHeight: number): Shape {
-    return Shape.rect(LEFT_CHAMBER_CENTER_X - PASSAGE_SIZE / 2, OPENING_FLOOR_Y, PASSAGE_SIZE, leftColumnHeight);
+    return Shape.rect(
+      LEFT_CHAMBER_CENTER_X - PASSAGE_SIZE / 2,
+      CHAMBER_OPENING_FLOOR_Y,
+      PASSAGE_SIZE,
+      leftColumnHeight,
+    );
   }
 
   /** Water in the wide right column. */
   public static createRightColumnWaterShape(rightColumnHeight: number): Shape {
     return Shape.rect(
       RIGHT_CHAMBER_CENTER_X - RIGHT_OPENING_WIDTH / 2,
-      OPENING_FLOOR_Y,
+      CHAMBER_OPENING_FLOOR_Y,
       RIGHT_OPENING_WIDTH,
       rightColumnHeight,
     );
@@ -207,8 +212,8 @@ export class ChamberPoolModel extends Pool {
   public override getGroundOpenings(): ReadonlyArray<{ readonly minX: number; readonly maxX: number }> {
     return [
       {
-        minX: LEFT_CHAMBER_CENTER_X - LEFT_OPENING_WIDTH / 2,
-        maxX: LEFT_CHAMBER_CENTER_X + LEFT_OPENING_WIDTH / 2,
+        minX: LEFT_CHAMBER_CENTER_X - CHAMBER_LEFT_OPENING_WIDTH / 2,
+        maxX: LEFT_CHAMBER_CENTER_X + CHAMBER_LEFT_OPENING_WIDTH / 2,
       },
       {
         minX: RIGHT_CHAMBER_CENTER_X - RIGHT_OPENING_WIDTH / 2,
@@ -219,12 +224,12 @@ export class ChamberPoolModel extends Pool {
 
   /** Altitude of the surface of the narrow left column, metres. */
   public getLeftSurfaceY(): number {
-    return OPENING_FLOOR_Y + this.leftColumnHeightProperty.value;
+    return CHAMBER_OPENING_FLOOR_Y + this.leftColumnHeightProperty.value;
   }
 
   /** Altitude of the surface of the wide right column, metres. */
   public getRightSurfaceY(): number {
-    return OPENING_FLOOR_Y + this.rightColumnHeightProperty.value;
+    return CHAMBER_OPENING_FLOOR_Y + this.rightColumnHeightProperty.value;
   }
 
   /**
@@ -264,8 +269,8 @@ export class ChamberPoolModel extends Pool {
   public isOverAnOpening(mass: MassModel): boolean {
     const bounds = mass.getBounds();
     const overLeft =
-      bounds.maxX > LEFT_CHAMBER_CENTER_X - LEFT_OPENING_WIDTH / 2 &&
-      bounds.minX < LEFT_CHAMBER_CENTER_X + LEFT_OPENING_WIDTH / 2;
+      bounds.maxX > LEFT_CHAMBER_CENTER_X - CHAMBER_LEFT_OPENING_WIDTH / 2 &&
+      bounds.minX < LEFT_CHAMBER_CENTER_X + CHAMBER_LEFT_OPENING_WIDTH / 2;
     const overRight =
       bounds.maxX > RIGHT_CHAMBER_CENTER_X - RIGHT_OPENING_WIDTH / 2 &&
       bounds.minX < RIGHT_CHAMBER_CENTER_X + RIGHT_OPENING_WIDTH / 2;
@@ -283,7 +288,7 @@ export class ChamberPoolModel extends Pool {
     const stacked = this.getStackedMasses();
     if (stacked.length > 0) {
       const lowestBottomY = Math.min(...stacked.map((mass) => mass.getBottomY()));
-      const restingSurfaceY = OPENING_FLOOR_Y + RESTING_COLUMN_HEIGHT;
+      const restingSurfaceY = CHAMBER_OPENING_FLOOR_Y + RESTING_COLUMN_HEIGHT;
       this.leftColumnHeightProperty.value = RESTING_COLUMN_HEIGHT - Math.abs(restingSurfaceY - lowestBottomY);
     } else {
       // Nothing pressing: ease back to level. See the class comment on why this

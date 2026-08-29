@@ -87,6 +87,18 @@ const FluidPressureAndFlowColors = {
     projector: "#f2f2f2",
   }),
 
+  /** Interior wall colour visible behind the water, matching the published sim. */
+  poolInteriorColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "poolInterior", {
+    default: "#f3f0e9",
+    projector: "#faf8f2",
+  }),
+
+  /** Cement lip traced around the pool opening at ground level. */
+  poolCementColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "poolCement", {
+    default: "#8a8070",
+    projector: "#6a6050",
+  }),
+
   /** The heavy outline around a pool or pipe wall. */
   poolEdgeColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "poolEdge", {
     default: "#8f8f8f",

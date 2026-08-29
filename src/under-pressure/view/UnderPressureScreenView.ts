@@ -44,7 +44,9 @@ import { StringManager } from "../../i18n/StringManager.js";
 import { MysteryQuantity } from "../model/MysteryPoolModel.js";
 import { PoolScene } from "../model/PoolScene.js";
 import type { UnderPressureModel } from "../model/UnderPressureModel.js";
+import { ChamberMassDropZoneNode } from "./ChamberMassDropZoneNode.js";
 import { MassNode } from "./MassNode.js";
+import { MysteryPoolControlsNode } from "./MysteryPoolControlsNode.js";
 import { PoolFaucetsNode } from "./PoolFaucetsNode.js";
 import { PoolGridNode } from "./PoolGridNode.js";
 import { PoolNode } from "./PoolNode.js";
@@ -68,6 +70,12 @@ const MODEL_CENTER_X = -0.7;
 
 /** How high above the ground a tool may be dragged, metres. */
 const MAX_TOOL_ALTITUDE = 3.6;
+
+/** Vertical offset from an accordion box top to its slider readout, view pixels. */
+const MYSTERY_COMBO_TOP_INSET = 28;
+
+/** Panel width shared by the control column and mystery choice panel. */
+const CONTROL_PANEL_WIDTH = 150;
 
 /** Length of the draggable ruler, metres. */
 const RULER_LENGTH = 4;
@@ -108,6 +116,7 @@ export class UnderPressureScreenView extends ScreenView {
       this.layoutBounds.minY,
       this.layoutBounds.maxY,
       GROUND_VIEW_Y,
+      { isAtmosphereProperty: model.isAtmosphereProperty },
     );
     this.addChild(skyGround);
 
@@ -192,6 +201,7 @@ export class UnderPressureScreenView extends ScreenView {
     // ── Chamber-pool weights ──────────────────────────────────────────────────
     const massLayer = new Node();
     const massDragBounds = new Bounds2(-5.4, -MAX_POOL_HEIGHT, 2.6, MAX_TOOL_ALTITUDE);
+    massLayer.addChild(new ChamberMassDropZoneNode(model.chamberPool, modelViewTransform));
     for (const mass of model.chamberPool.masses) {
       massLayer.addChild(
         new MassNode(
@@ -288,6 +298,7 @@ export class UnderPressureScreenView extends ScreenView {
       modelViewTransform,
       toolDragBounds,
       a11y.controls.rulerStringProperty,
+      { onClose: () => this.isRulerVisibleProperty.set(false) },
     );
     this.isRulerVisibleProperty.link((isVisible) => {
       ruler.visible = isVisible;
@@ -344,15 +355,31 @@ export class UnderPressureScreenView extends ScreenView {
     this.addChild(gravityBox);
     this.addChild(fluidDensityBox);
 
-    // The mystery scene hides whichever quantity the student is solving for.
-    model.sceneProperty.link(() => {
-      gravityBox.visible = !model.isGravityHidden();
-      fluidDensityBox.visible = !model.isFluidDensityHidden();
-    });
-    model.mysteryPool.mysteryQuantityProperty.link(() => {
-      gravityBox.visible = !model.isGravityHidden();
-      fluidDensityBox.visible = !model.isFluidDensityHidden();
-    });
+    const mysteryControls = new MysteryPoolControlsNode(
+      model.mysteryPool,
+      model.sceneProperty,
+      this,
+      screenStrings,
+      a11y.controls.mysteryChooserStringProperty,
+      CONTROL_PANEL_WIDTH,
+    );
+    this.addChild(mysteryControls.choicePanel);
+    this.addChild(mysteryControls.fluidComboBox);
+    this.addChild(mysteryControls.planetComboBox);
+
+    const updateMysterySliders = () => {
+      const isMystery = model.sceneProperty.value === PoolScene.MYSTERY;
+      if (!isMystery) {
+        gravityBox.unitSlider.setSliderEnabled(true);
+        fluidDensityBox.unitSlider.setSliderEnabled(true);
+        return;
+      }
+      gravityBox.unitSlider.setSliderEnabled(!model.isGravityHidden());
+      fluidDensityBox.unitSlider.setSliderEnabled(!model.isFluidDensityHidden());
+    };
+    model.sceneProperty.link(updateMysterySliders);
+    model.mysteryPool.mysteryQuantityProperty.link(updateMysterySliders);
+    updateMysterySliders();
 
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
@@ -374,9 +401,18 @@ export class UnderPressureScreenView extends ScreenView {
       gravityBox.bottom = resetAllButton.top - PANEL_SPACING;
       fluidDensityBox.right = gravityBox.right;
       fluidDensityBox.bottom = gravityBox.top - PANEL_SPACING;
+
+      mysteryControls.choicePanel.left = controlPanel.left;
+      mysteryControls.choicePanel.top = controlPanel.bottom + PANEL_SPACING;
+
+      mysteryControls.fluidComboBox.right = fluidDensityBox.right - 10;
+      mysteryControls.fluidComboBox.top = fluidDensityBox.top + MYSTERY_COMBO_TOP_INSET;
+      mysteryControls.planetComboBox.right = gravityBox.right - 10;
+      mysteryControls.planetComboBox.top = gravityBox.top + MYSTERY_COMBO_TOP_INSET;
     };
     pinAccordionBox(gravityBox, stackRightColumn);
     pinAccordionBox(fluidDensityBox, stackRightColumn);
+    stackRightColumn();
 
     // ── Traversal order ───────────────────────────────────────────────────────
     // Scene first, since it changes what everything else refers to; then the
@@ -390,8 +426,11 @@ export class UnderPressureScreenView extends ScreenView {
           massLayer,
           ruler,
           controlPanel,
+          mysteryControls.choicePanel,
           gravityBox,
           fluidDensityBox,
+          mysteryControls.fluidComboBox,
+          mysteryControls.planetComboBox,
           resetAllButton,
         ],
       }),

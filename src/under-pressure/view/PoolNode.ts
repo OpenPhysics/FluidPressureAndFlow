@@ -15,7 +15,7 @@
  */
 
 import { DerivedProperty, type NumberProperty, type TReadOnlyProperty } from "scenerystack/axon";
-import type { Shape } from "scenerystack/kite";
+import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Node, Path } from "scenerystack/scenery";
 import { getFluidColor } from "../../common/model/fluidColor.js";
@@ -24,6 +24,12 @@ import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 /** Stroke width of the pool wall and the water outline, view pixels. */
 const EDGE_LINE_WIDTH = 3;
 const WATER_LINE_WIDTH = 1;
+
+/** Cement lip traced outside the pool walls at the cutaway, view pixels. */
+const CEMENT_LINE_WIDTH = 4;
+
+/** How far the cement lip sits outside the pool wall, model metres. */
+const CEMENT_OUTSET = 0.1;
 
 export class PoolNode extends Node {
   private readonly disposePoolNode: () => void;
@@ -48,7 +54,13 @@ export class PoolNode extends Node {
     const viewContainerShape = modelViewTransform.modelToViewShape(containerShape);
 
     const lining = new Path(viewContainerShape, {
-      fill: FluidPressureAndFlowColors.poolLiningColorProperty,
+      fill: FluidPressureAndFlowColors.poolInteriorColorProperty,
+    });
+
+    const cementLip = new Path(modelViewTransform.modelToViewShape(createCementLipShape(containerShape)), {
+      stroke: FluidPressureAndFlowColors.poolCementColorProperty,
+      lineWidth: CEMENT_LINE_WIDTH,
+      lineJoin: "round",
     });
 
     // The wall is stroked again over the top of the water. A full pool covers its
@@ -75,7 +87,7 @@ export class PoolNode extends Node {
     };
     waterShapeProperty.link(updateWaterShape);
 
-    this.children = [lining, water, wall];
+    this.children = [lining, water, cementLip, wall];
 
     this.disposePoolNode = () => {
       waterShapeProperty.unlink(updateWaterShape);
@@ -87,4 +99,18 @@ export class PoolNode extends Node {
     this.disposePoolNode();
     super.dispose();
   }
+}
+
+/**
+ * Three-sided cement border around the pool opening: down the left wall, across
+ * the floor, and up the right wall — the cutaway view in the published sim.
+ */
+function createCementLipShape(containerShape: Shape): Shape {
+  const bounds = containerShape.getBounds();
+  const left = bounds.minX - CEMENT_OUTSET;
+  const right = bounds.maxX + CEMENT_OUTSET;
+  const top = bounds.maxY;
+  const bottom = bounds.minY - CEMENT_OUTSET;
+
+  return new Shape().moveTo(left, top).lineTo(left, bottom).lineTo(right, bottom).lineTo(right, top);
 }
