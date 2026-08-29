@@ -28,13 +28,16 @@ import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import type { VelocitySensor } from "../model/VelocitySensor.js";
 
-/** Size of the readout body, view pixels. */
-const BODY_WIDTH = 76;
-const BODY_HEIGHT = 44;
+/**
+ * Size of the readout body, view pixels. Exported because the stowed tray icon in
+ * createSensorIcons.ts is drawn at the instrument's true size, not a thumbnail.
+ */
+export const BODY_WIDTH = 76;
+export const BODY_HEIGHT = 44;
 
-/** Height of the pointed tip below the body, view pixels. */
-const TIP_HEIGHT = 12;
-const TIP_HALF_WIDTH = 8;
+/** Height of the pointed tip below the body, view pixels. Shared with the tray icon. */
+export const TIP_HEIGHT = 12;
+export const TIP_HALF_WIDTH = 8;
 
 /** View pixels of arrow per m/s of flow. */
 const ARROW_SCALE = 22;
