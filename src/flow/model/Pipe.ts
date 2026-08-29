@@ -23,7 +23,7 @@
  * MIN_PIPE_HEIGHT apart. That is a mitigation, not a fix; see doc/model.md.
  */
 
-import { BooleanProperty, NumberProperty } from "scenerystack/axon";
+import { BooleanProperty, DerivedProperty, NumberProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { DEFAULT_FLOW_RATE } from "../../FluidPressureAndFlowConstants.js";
@@ -73,6 +73,9 @@ const SPLINE_SAMPLES = 70;
  */
 const FRICTION_PROFILE_OVERSHOOT = 0.2;
 
+/** Samples used to integrate the relative Hagen–Poiseuille resistance. */
+const RESISTANCE_SAMPLES = 120;
+
 /** A sampled point on the wall: an x with the floor and ceiling there. */
 export type WallSample = {
   readonly x: number;
@@ -90,13 +93,21 @@ export class Pipe {
   public readonly flowRateProperty = new NumberProperty(DEFAULT_FLOW_RATE);
 
   /**
+   * Flow actually carried by the pipe, m³/s.
+   *
+   * With friction off this is the student-selected flow rate. With it on, the
+   * slider represents the pump setting for the original, straight pipe: a
+   * narrower or longer-resistance path passes less fluid at that same driving
+   * pressure. This is the missing behaviour in upstream issues #314 and #318.
+   */
+  public readonly effectiveFlowRateProperty: TReadOnlyProperty<number>;
+
+  /**
    * Whether the wall slows the fluid near the edges.
    *
-   * This is a *velocity profile* only: it changes how fast a particle near the
-   * wall moves, and nothing else. It does not produce a pressure drop along the
-   * pipe and does not change the flux, which is what real viscosity would do.
-   * PhET issue #314 is exactly this complaint and it is correct; the divergence
-   * is documented in doc/model.md rather than silently reproduced.
+   * When enabled it adds a laminar velocity profile and a Hagen–Poiseuille
+   * pressure loss. The flow source is pressure-driven in this mode, so narrowing
+   * the pipe also lowers the volume flow rate.
    */
   public readonly isFrictionEnabledProperty = new BooleanProperty(false);
 
@@ -127,6 +138,12 @@ export class Pipe {
       sections.push(section);
     }
     this.crossSections = sections;
+
+    this.effectiveFlowRateProperty = new DerivedProperty(
+      [this.flowRateProperty, this.isFrictionEnabledProperty, this.shapeVersionProperty],
+      (requestedFlowRate, hasFriction) =>
+        hasFriction ? requestedFlowRate / this.getRelativeHydraulicResistance() : requestedFlowRate,
+    );
   }
 
   /** Discards the cached wall so the next query rebuilds it, and tells listeners. */
@@ -245,7 +262,55 @@ export class Pipe {
 
   /** Speed at x from continuity, m/s. Before slope and friction corrections. */
   public getSpeed(x: number): number {
-    return this.flowRateProperty.value / this.getCrossSectionalArea(x);
+    return this.effectiveFlowRateProperty.value / this.getCrossSectionalArea(x);
+  }
+
+  /**
+   * Hydraulic resistance relative to the initial straight pipe.
+   *
+   * Hagen–Poiseuille gives R ∝ ∫dx/r⁴. Keeping this dimensionless makes the
+   * friction switch useful without inventing a viscosity or a hidden pressure
+   * source, while retaining the physically important fourth-power dependence.
+   */
+  public getRelativeHydraulicResistance(): number {
+    const minX = this.getMinX();
+    const maxX = this.getMaxX();
+    const referenceRadius = (INITIAL_TOP_Y - INITIAL_BOTTOM_Y) / 2;
+    let integral = 0;
+    for (let i = 0; i < RESISTANCE_SAMPLES; i++) {
+      const x = minX + ((i + 0.5) * (maxX - minX)) / RESISTANCE_SAMPLES;
+      const section = this.getCrossSectionAt(x);
+      const radius = (section.topY - section.bottomY) / 2;
+      integral += (referenceRadius / radius) ** 4;
+    }
+    return integral / RESISTANCE_SAMPLES;
+  }
+
+  /** Fraction of the total viscous loss accumulated from the inlet to x. */
+  public getResistanceFractionAt(x: number): number {
+    const minX = this.getMinX();
+    const maxX = this.getMaxX();
+    const endX = Math.max(minX, Math.min(maxX, x));
+    if (endX === minX) {
+      return 0;
+    }
+
+    let total = 0;
+    let partial = 0;
+    const referenceRadius = (INITIAL_TOP_Y - INITIAL_BOTTOM_Y) / 2;
+    for (let i = 0; i < RESISTANCE_SAMPLES; i++) {
+      const start = minX + (i * (maxX - minX)) / RESISTANCE_SAMPLES;
+      const end = minX + ((i + 1) * (maxX - minX)) / RESISTANCE_SAMPLES;
+      const section = this.getCrossSectionAt((start + end) / 2);
+      const resistance = (referenceRadius / ((section.topY - section.bottomY) / 2)) ** 4;
+      total += resistance;
+      if (endX >= end) {
+        partial += resistance;
+      } else if (endX > start) {
+        partial += resistance * ((endX - start) / (end - start));
+      }
+    }
+    return total === 0 ? 0 : partial / total;
   }
 
   /** Where a point sits between floor (0) and ceiling (1) at its x. */

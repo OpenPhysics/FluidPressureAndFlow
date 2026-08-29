@@ -23,7 +23,7 @@
  * HTML5 port; see doc/model.md for the provenance of each group.
  */
 
-import { Range } from "scenerystack/dot";
+import { Bounds2, Range, Vector2 } from "scenerystack/dot";
 import FluidPressureAndFlowNamespace from "./FluidPressureAndFlowNamespace.js";
 
 // ── Layout / chrome (screen pixels) ───────────────────────────────────────────
@@ -106,6 +106,17 @@ export const FLOW_RATE_RANGE = new Range(1, 10);
 /** Initial pipe flow rate (m³/s), i.e. 5000 L/s. */
 export const DEFAULT_FLOW_RATE = 5;
 
+/**
+ * Flow screen model-view mapping, taken from the HTML5 reference in totality
+ * (`FlowScreenView.js`): model origin at view (370, 140), 50 view px per metre.
+ */
+export const FLOW_MODEL_VIEW_ANCHOR = new Vector2(370, 140);
+
+export const FLOW_VIEW_SCALE = 50;
+
+/** Canvas bounds for pipe tracers; matches upstream `ParticleCanvasNode` options. */
+export const FLOW_PARTICLE_CANVAS_BOUNDS = new Bounds2(20, 80, 800, 600);
+
 // ── Time stepping ─────────────────────────────────────────────────────────────
 
 /**
@@ -138,6 +149,9 @@ FluidPressureAndFlowNamespace.register("FluidPressureAndFlowConstants", {
   NUMBER_OF_BAROMETERS,
   FLOW_RATE_RANGE,
   DEFAULT_FLOW_RATE,
+  FLOW_MODEL_VIEW_ANCHOR,
+  FLOW_VIEW_SCALE,
+  FLOW_PARTICLE_CANVAS_BOUNDS,
   MAX_DT,
   SLOW_MOTION_FACTOR,
 });

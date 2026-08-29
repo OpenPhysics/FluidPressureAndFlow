@@ -4,10 +4,9 @@
  * The Flow screen's right-hand panel: the ruler, friction, flux meter and marker
  * dots, and the unit-system chooser.
  *
- * Friction sits with the display toggles rather than with the physics controls
- * because, in this sim, that is honestly what it is: a change to how the tracers
- * move near the wall, not to the pressure or the flux. See doc/model.md and
- * phetsims/fluid-pressure-and-flow#314.
+ * Friction sits with the display toggles so the optional viscosity model is easy
+ * to compare with the ideal-flow case. Unlike the original implementation, it
+ * changes both pressure and flux; see doc/model.md.
  */
 
 import type { BooleanProperty, EnumerationProperty, TReadOnlyProperty } from "scenerystack/axon";

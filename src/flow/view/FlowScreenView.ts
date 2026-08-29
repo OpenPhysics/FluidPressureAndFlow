@@ -31,22 +31,25 @@ import { SensorToolboxNode } from "../../common/view/SensorToolboxNode.js";
 import { SkyGroundNode } from "../../common/view/SkyGroundNode.js";
 import { UnitSlider } from "../../common/view/UnitSlider.js";
 import { VelocitySensorNode } from "../../common/view/VelocitySensorNode.js";
-import { FLOW_RATE_RANGE, PANEL_SPACING, SCREEN_VIEW_MARGIN } from "../../FluidPressureAndFlowConstants.js";
+import {
+  FLOW_MODEL_VIEW_ANCHOR,
+  FLOW_RATE_RANGE,
+  FLOW_VIEW_SCALE,
+  PANEL_SPACING,
+  SCREEN_VIEW_MARGIN,
+} from "../../FluidPressureAndFlowConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { FlowModel } from "../model/FlowModel.js";
 import { FlowControlPanel } from "./FlowControlPanel.js";
 import { FlowScreenSummaryContent } from "./FlowScreenSummaryContent.js";
 import { FluxMeterNode } from "./FluxMeterNode.js";
 import { GridInjectorNode } from "./GridInjectorNode.js";
-import { ParticleCanvasNode } from "./ParticleCanvasNode.js";
+import type { ParticleCanvasNode } from "./ParticleCanvasNode.js";
 import { PipeHandlesNode } from "./PipeHandlesNode.js";
 import { PipeNode } from "./PipeNode.js";
 
-/** View pixels per model metre. The pipe is 12 m long and has to fit the screen. */
-const VIEW_SCALE = 62;
-
-/** View y of the ground line (model y = 0). */
-const GROUND_VIEW_Y = 215;
+/** View pixels per model metre on the Flow screen (PhET HTML5 reference). */
+const VIEW_SCALE = FLOW_VIEW_SCALE;
 
 /** How high above the ground a tool may be dragged, metres. */
 const MAX_TOOL_ALTITUDE = 3.2;
@@ -79,9 +82,10 @@ export class FlowScreenView extends ScreenView {
 
     const modelViewTransform = ModelViewTransform2.createSinglePointScaleInvertedYMapping(
       Vector2.ZERO,
-      new Vector2(this.layoutBounds.centerX - 40, GROUND_VIEW_Y),
+      FLOW_MODEL_VIEW_ANCHOR,
       VIEW_SCALE,
     );
+    const groundY = modelViewTransform.modelToViewY(0);
 
     // ── Backdrop ──────────────────────────────────────────────────────────────
     const skyGround = new SkyGroundNode(
@@ -89,17 +93,36 @@ export class FlowScreenView extends ScreenView {
       this.layoutBounds.maxX,
       this.layoutBounds.minY,
       this.layoutBounds.maxY,
-      GROUND_VIEW_Y,
+      groundY,
     );
     this.addChild(skyGround);
 
-    // ── Pipe and its contents ─────────────────────────────────────────────────
-    this.addChild(new PipeNode(model.pipe, model.fluidDensityProperty, modelViewTransform));
+    const toolsLayer = new Node();
+    this.addChild(toolsLayer);
 
-    this.particleCanvas = new ParticleCanvasNode(model, modelViewTransform, this.layoutBounds);
-    this.addChild(this.particleCanvas);
+    // ── Pipe scene (z-order matches totality FlowScreenView) ──────────────────
+    const gridInjector = new GridInjectorNode(
+      model.gridInjectorCooldownProperty,
+      () => model.injectGrid(),
+      model.pipe,
+      modelViewTransform,
+      a11y.controls.gridInjectorStringProperty,
+    );
+    this.addChild(gridInjector);
 
-    const pipeHandles = new PipeHandlesNode(model.pipe, modelViewTransform, a11y.controls.pipeHandleStringProperty);
+    const pipeNode = new PipeNode(model, model.pipe, model.fluidDensityProperty, modelViewTransform, this.layoutBounds);
+    this.addChild(pipeNode);
+    this.particleCanvas = pipeNode.particleCanvas;
+
+    const pipeHandles = new PipeHandlesNode(
+      model.pipe,
+      pipeNode,
+      modelViewTransform,
+      a11y.controls.pipeHandleStringProperty,
+      {
+        layoutBounds: this.layoutBounds,
+      },
+    );
     this.addChild(pipeHandles);
 
     const fluxMeterNode = new FluxMeterNode(
@@ -111,16 +134,8 @@ export class FlowScreenView extends ScreenView {
       screenStrings,
       a11y.controls.fluxMeterStringProperty,
     );
-    this.addChild(fluxMeterNode);
-
-    const gridInjector = new GridInjectorNode(
-      model.gridInjectorCooldownProperty,
-      () => model.injectGrid(),
-      a11y.controls.gridInjectorStringProperty,
-    );
-    gridInjector.centerX = modelViewTransform.modelToViewX(model.pipe.getMinX() + 0.3);
-    gridInjector.bottom = modelViewTransform.modelToViewY(-1) - 6;
-    this.addChild(gridInjector);
+    pipeNode.preParticleLayer.addChild(fluxMeterNode.backRing);
+    toolsLayer.addChild(fluxMeterNode);
 
     // ── Instruments ───────────────────────────────────────────────────────────
     const toolDragBounds = new Bounds2(
@@ -132,7 +147,7 @@ export class FlowScreenView extends ScreenView {
     const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.minX + 110), 1.4);
 
     const sensorLayer = new Node();
-    this.addChild(sensorLayer);
+    toolsLayer.addChild(sensorLayer);
 
     const barometerNodes = new Map<Barometer, BarometerNode>();
     const speedometerNodes = new Map<VelocitySensor, VelocitySensorNode>();
@@ -206,7 +221,7 @@ export class FlowScreenView extends ScreenView {
     this.isRulerVisibleProperty.link((isVisible) => {
       ruler.visible = isVisible;
     });
-    this.addChild(ruler);
+    toolsLayer.addChild(ruler);
 
     // ── Controls ──────────────────────────────────────────────────────────────
     const flowRateControl = new FluidPressureAndFlowPanel(
@@ -269,6 +284,8 @@ export class FlowScreenView extends ScreenView {
       bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
     });
     this.addChild(resetAllButton);
+
+    toolsLayer.moveToFront();
 
     // ── Traversal order ───────────────────────────────────────────────────────
     this.addChild(

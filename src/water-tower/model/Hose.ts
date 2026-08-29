@@ -21,6 +21,9 @@ export const HOSE_OUTLET_X = 17;
 /** Highest the nozzle may be raised, metres. */
 export const MAX_HOSE_OUTLET_Y = 14;
 
+/** Radius of the hose bore represented by the model, metres. */
+export const HOSE_RADIUS = 0.4;
+
 /** Angle straight up, radians. Zero is horizontal, to the right. */
 const INITIAL_ANGLE = Math.PI / 2;
 
@@ -44,9 +47,53 @@ export class Hose {
     return Vector2.createPolar(1, this.angleProperty.value);
   }
 
+  /**
+   * Whether a model point lies in the water-filled hose.
+   *
+   * The view and the model use the same quadratic sag followed by the short
+   * straight nozzle. Keeping this test in the model prevents a barometer from
+   * treating water inside the hose as open air (upstream issue #322).
+   */
+  public containsPoint(attachment: Vector2, x: number, y: number): boolean {
+    if (!this.isEnabledProperty.value) {
+      return false;
+    }
+    const outlet = this.getOutletPosition();
+    const nozzleLength = 2.4;
+    const direction = this.getDirection();
+    const bend = outlet.minus(direction.timesScalar(nozzleLength));
+    const control = new Vector2(bend.x, Math.min(attachment.y, bend.y) - 1);
+    let previous = attachment;
+    const samples = 24;
+    for (let i = 1; i <= samples; i++) {
+      const t = i / samples;
+      const inverseT = 1 - t;
+      const current = attachment
+        .timesScalar(inverseT * inverseT)
+        .plus(control.timesScalar(2 * inverseT * t))
+        .plus(bend.timesScalar(t * t));
+      if (distanceToSegmentSquared(x, y, previous, current) <= HOSE_RADIUS * HOSE_RADIUS) {
+        return true;
+      }
+      previous = current;
+    }
+    return distanceToSegmentSquared(x, y, bend, outlet) <= HOSE_RADIUS * HOSE_RADIUS;
+  }
+
   public reset(): void {
     this.isEnabledProperty.reset();
     this.outletYProperty.reset();
     this.angleProperty.reset();
   }
+}
+
+function distanceToSegmentSquared(x: number, y: number, start: Vector2, end: Vector2): number {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const lengthSquared = dx * dx + dy * dy;
+  const t =
+    lengthSquared === 0 ? 0 : Math.max(0, Math.min(1, ((x - start.x) * dx + (y - start.y) * dy) / lengthSquared));
+  const closestX = start.x + t * dx;
+  const closestY = start.y + t * dy;
+  return (x - closestX) ** 2 + (y - closestY) ** 2;
 }

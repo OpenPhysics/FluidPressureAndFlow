@@ -80,6 +80,15 @@ describe("Bernoulli's equation on the Flow screen", () => {
     expect(highPressure).toBeLessThan(lowPressure);
   });
 
+  it("drops pressure downstream when friction is enabled", () => {
+    model.pipe.isFrictionEnabledProperty.value = true;
+    const inlet = model.getPressureAt(-5, model.pipe.fractionToY(-5, 0.5));
+    const outlet = model.getPressureAt(5, model.pipe.fractionToY(5, 0.5));
+    expect(inlet).not.toBeNull();
+    expect(outlet).not.toBeNull();
+    expect(outlet as number).toBeLessThan(inlet as number);
+  });
+
   it("never reports a negative pressure, even at the highest flow through the narrowest pipe", () => {
     model.pipe.flowRateProperty.value = 10;
     for (const section of model.pipe.crossSections) {

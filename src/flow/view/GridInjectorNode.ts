@@ -12,45 +12,71 @@
  * pipe at once is just a cloud of dots, and the shape is the whole point.
  */
 
-import type { NumberProperty } from "scenerystack/axon";
-import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
-import { Circle, Node, Rectangle } from "scenerystack/scenery";
+import { DerivedProperty, Multilink, type NumberProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
+import { Circle, Image, Node } from "scenerystack/scenery";
 import { RoundPushButton } from "scenerystack/sun";
-import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import injectorBulbUrl from "../../../images/injectorBulbCropped.png";
+import type { Pipe } from "../model/Pipe.js";
 
 /** Radius of the plunger head, view pixels. */
-const PLUNGER_RADIUS = 16;
+const PLUNGER_RADIUS = 25;
+
+/** Model x where the injector sits, from the HTML5 reference. */
+const INJECTOR_MODEL_X = -6;
+
+/** View-pixel offset from the pipe mouth to the bulb artwork. */
+const INJECTOR_X_OFFSET = 50;
+
+/** View-pixel offset above the pipe ceiling to the bulb artwork. */
+const INJECTOR_Y_OFFSET = 150;
+
+const BULB_SCALE = 0.35;
 
 export class GridInjectorNode extends Node {
   private readonly disposeGridInjectorNode: () => void;
 
-  public constructor(cooldownProperty: NumberProperty, inject: () => void, accessibleName: TReadOnlyProperty<string>) {
+  public constructor(
+    cooldownProperty: NumberProperty,
+    inject: () => void,
+    pipe: Pipe,
+    modelViewTransform: ModelViewTransform2,
+    accessibleName: TReadOnlyProperty<string>,
+  ) {
     super();
 
     const isReadyProperty = new DerivedProperty([cooldownProperty], (cooldown) => cooldown <= 0);
 
+    const bulb = new Image(injectorBulbUrl, { scale: BULB_SCALE });
+
     const button = new RoundPushButton({
-      content: new Circle(PLUNGER_RADIUS, { fill: FluidPressureAndFlowColors.gridTracerColorProperty }),
+      content: new Circle(PLUNGER_RADIUS, { fill: "red" }),
       listener: inject,
       enabledProperty: isReadyProperty,
-      baseColor: FluidPressureAndFlowColors.panelBackgroundColorProperty,
+      baseColor: "red",
+      stroke: "red",
       accessibleName: accessibleName,
-      xMargin: 6,
-      yMargin: 6,
+      centerX: bulb.centerX,
+      top: bulb.top + 31,
+      touchAreaDilation: 10,
     });
 
-    // A short stem down to the pipe mouth, so the plunger reads as connected to
-    // the thing it injects into rather than floating above it.
-    const stem = new Rectangle(0, 0, 8, 26, {
-      fill: FluidPressureAndFlowColors.panelBorderColorProperty,
-      centerX: button.centerX,
-      top: button.bottom - 4,
-    });
+    this.children = [bulb, button];
 
-    this.children = [stem, button];
+    const reposition = () => {
+      const section = pipe.getCrossSectionAt(INJECTOR_MODEL_X);
+      this.setTranslation(
+        modelViewTransform.modelToViewX(INJECTOR_MODEL_X) - INJECTOR_X_OFFSET,
+        modelViewTransform.modelToViewY(section.topY) - INJECTOR_Y_OFFSET,
+      );
+    };
+
+    const positionMultilink = Multilink.multilinkAny([pipe.shapeVersionProperty], reposition);
+    reposition();
 
     this.disposeGridInjectorNode = () => {
       isReadyProperty.dispose();
+      positionMultilink.dispose();
       button.dispose();
     };
   }

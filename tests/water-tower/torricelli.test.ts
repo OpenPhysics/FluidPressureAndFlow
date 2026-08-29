@@ -50,6 +50,15 @@ describe("Torricelli's law", () => {
     expect(model.getEffluxSpeed()).toBeCloseTo(before, 9);
   });
 
+  it("does not depend on tank capacity when the water level is held fixed", () => {
+    const head = model.getHead();
+    const speed = model.getEffluxSpeed();
+    model.waterTower.capacityProperty.value *= 1.5;
+    expect(model.waterTower.getRadius()).toBeGreaterThan(TANK_RADIUS);
+    expect(model.getHead()).toBeCloseTo(head, 9);
+    expect(model.getEffluxSpeed()).toBeCloseTo(speed, 9);
+  });
+
   it("falls as the tank drains", () => {
     const fast = model.getEffluxSpeed();
     model.waterTower.fluidVolumeProperty.value = TANK_VOLUME * 0.3;
@@ -251,5 +260,13 @@ describe("pressure in the tank", () => {
     const velocity = model.getVelocityAt(0, model.waterTower.baseCenterProperty.value.y + 1);
     expect(velocity).not.toBeNull();
     expect((velocity as { magnitude: number }).magnitude).toBe(0);
+  });
+
+  it("reports the hydrostatic pressure inside an attached hose", () => {
+    model.hose.isEnabledProperty.value = true;
+    model.hose.outletYProperty.value = 5;
+    const pressureInHose = model.getPressureAt(17, 4);
+    expect(pressureInHose).not.toBeNull();
+    expect(pressureInHose as number).toBeGreaterThan(model.getAirPressure(4));
   });
 });

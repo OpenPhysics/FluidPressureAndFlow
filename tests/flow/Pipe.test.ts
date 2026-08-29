@@ -102,15 +102,18 @@ describe("Pipe", () => {
       expect(nearWall).toBeGreaterThan(0);
     });
 
-    it("leaves the flux unchanged, which is the known divergence from viscosity", () => {
-      // Documented in doc/model.md and upstream as phetsims/…#314: the friction
-      // checkbox is a velocity profile only. This test pins the current
-      // behaviour so a future fix is a deliberate change, not an accident.
-      const areaBefore = pipe.getCrossSectionalArea(0);
-      const speedBefore = pipe.getSpeed(0);
+    it("reduces flow through a constriction at a fixed pump setting", () => {
+      const requestedFlow = pipe.flowRateProperty.value;
       pipe.isFrictionEnabledProperty.value = true;
-      expect(pipe.getCrossSectionalArea(0)).toBeCloseTo(areaBefore, 9);
-      expect(pipe.getSpeed(0)).toBeCloseTo(speedBefore, 9);
+      const middle = pipe.crossSections[3];
+      expect(middle).toBeDefined();
+      if (!middle) {
+        return;
+      }
+      middle.topYProperty.value = -2;
+
+      expect(pipe.effectiveFlowRateProperty.value).toBeLessThan(requestedFlow);
+      expect(pipe.getRelativeHydraulicResistance()).toBeGreaterThan(1);
     });
   });
 

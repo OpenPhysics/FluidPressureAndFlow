@@ -39,7 +39,7 @@ import { EARTH_GRAVITY, MAX_DT, SLOW_MOTION_FACTOR } from "../../FluidPressureAn
 import { FaucetMode } from "./FaucetMode.js";
 import { Hose } from "./Hose.js";
 import { WaterDrop } from "./WaterDrop.js";
-import { TANK_RADIUS, TANK_VOLUME, WaterTower } from "./WaterTower.js";
+import { WaterTower } from "./WaterTower.js";
 
 /** Instruments available on this screen. */
 const NUMBER_OF_BAROMETERS = 2;
@@ -112,6 +112,7 @@ export class WaterTowerModel extends FluidPressureAndFlowModel {
 
     this.waterTower.baseCenterProperty.link(() => this.updateSensorValues());
     this.waterTower.fluidVolumeProperty.link(() => this.updateSensorValues());
+    this.waterTower.capacityProperty.link(() => this.updateSensorValues());
     this.hose.isEnabledProperty.link(() => this.updateSensorValues());
     this.hose.outletYProperty.link(() => this.updateSensorValues());
   }
@@ -157,8 +158,18 @@ export class WaterTowerModel extends FluidPressureAndFlowModel {
   public override getPressureAt(x: number, y: number): number | null {
     const base = this.waterTower.baseCenterProperty.value;
     const surfaceY = this.waterTower.getFluidSurfaceY();
+    const outlet = this.getOutletPosition();
+    if (this.hose.containsPoint(this.waterTower.getHolePosition(), x, y)) {
+      // Bernoulli between the hose point and the open nozzle: the speed is
+      // constant through the hose, so only elevation changes its static
+      // pressure. At the nozzle this correctly reduces to ambient pressure.
+      return this.getAirPressure(outlet.y) + this.fluidDensityProperty.value * EARTH_GRAVITY * (outlet.y - y);
+    }
     const isInTankWater =
-      Math.abs(x - base.x) <= TANK_RADIUS && y >= base.y && y <= surfaceY && this.waterTower.getFluidLevel() > 0;
+      Math.abs(x - base.x) <= this.waterTower.getRadius() &&
+      y >= base.y &&
+      y <= surfaceY &&
+      this.waterTower.getFluidLevel() > 0;
 
     if (isInTankWater) {
       return this.getAirPressure(surfaceY) + this.fluidDensityProperty.value * EARTH_GRAVITY * (surfaceY - y);
@@ -182,7 +193,8 @@ export class WaterTowerModel extends FluidPressureAndFlowModel {
     }
 
     const base = this.waterTower.baseCenterProperty.value;
-    const inTank = Math.abs(x - base.x) <= TANK_RADIUS && y >= base.y && y <= this.waterTower.getFluidSurfaceY();
+    const inTank =
+      Math.abs(x - base.x) <= this.waterTower.getRadius() && y >= base.y && y <= this.waterTower.getFluidSurfaceY();
     return inTank ? Vector2.ZERO : null;
   }
 
@@ -259,7 +271,7 @@ export class WaterTowerModel extends FluidPressureAndFlowModel {
   /** Adds fluid to the tank, up to its capacity. */
   private addToTank(volume: number): void {
     this.waterTower.fluidVolumeProperty.value = Math.min(
-      TANK_VOLUME,
+      this.waterTower.capacityProperty.value,
       this.waterTower.fluidVolumeProperty.value + volume,
     );
   }

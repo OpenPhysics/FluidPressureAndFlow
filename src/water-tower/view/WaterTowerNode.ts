@@ -20,14 +20,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, KeyboardDragListener, Node, Path, Rectangle } from "scenerystack/scenery";
 import { getFluidColor } from "../../common/model/fluidColor.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
-import {
-  HOLE_SIZE,
-  MAX_TANK_BASE_Y,
-  MIN_TANK_BASE_Y,
-  TANK_HEIGHT,
-  TANK_RADIUS,
-  type WaterTower,
-} from "../model/WaterTower.js";
+import { HOLE_SIZE, MAX_TANK_BASE_Y, MIN_TANK_BASE_Y, TANK_HEIGHT, type WaterTower } from "../model/WaterTower.js";
 
 /** How far the legs splay out from the tank wall, metres. */
 const LEG_SPLAY = 3;
@@ -76,8 +69,9 @@ export class WaterTowerNode extends Node {
 
     const layout = () => {
       const base = waterTower.baseCenterProperty.value;
-      const leftX = modelViewTransform.modelToViewX(base.x - TANK_RADIUS);
-      const rightX = modelViewTransform.modelToViewX(base.x + TANK_RADIUS);
+      const radius = waterTower.getRadius();
+      const leftX = modelViewTransform.modelToViewX(base.x - radius);
+      const rightX = modelViewTransform.modelToViewX(base.x + radius);
       const baseY = modelViewTransform.modelToViewY(base.y);
       const topY = modelViewTransform.modelToViewY(base.y + TANK_HEIGHT);
 
@@ -92,8 +86,8 @@ export class WaterTowerNode extends Node {
       const groundY = modelViewTransform.modelToViewY(0);
       const legShape = new Shape();
       for (const side of [-1, 1]) {
-        const topX = modelViewTransform.modelToViewX(base.x + (side * TANK_RADIUS) / 2);
-        const bottomX = modelViewTransform.modelToViewX(base.x + side * (TANK_RADIUS / 2 + LEG_SPLAY));
+        const topX = modelViewTransform.modelToViewX(base.x + (side * radius) / 2);
+        const bottomX = modelViewTransform.modelToViewX(base.x + side * (radius / 2 + LEG_SPLAY));
         legShape.moveTo(topX, baseY);
         legShape.lineTo(bottomX, groundY);
       }
@@ -118,6 +112,7 @@ export class WaterTowerNode extends Node {
       [
         waterTower.baseCenterProperty,
         waterTower.fluidVolumeProperty,
+        waterTower.capacityProperty,
         waterTower.isHoleOpenProperty,
         fluidDensityProperty,
       ],

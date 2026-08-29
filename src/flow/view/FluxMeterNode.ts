@@ -4,9 +4,9 @@
  * The flux meter: a hoop the student slides along the pipe, with a panel showing
  * the area it encloses, the flux through it, and the flow rate.
  *
- * The three numbers are shown together because their relationship is the point.
- * Flow rate holds still while area and flux move opposite ways — that is the
- * continuity equation made watchable, and no one of the three shows it alone.
+ * The ring is split into a back arc (parented inside {@link PipeNode}'s
+ * pre-particle layer) and a front arc plus panel (on the tools layer), so
+ * tracers pass through the hoop rather than painting over it.
  */
 
 import type { EnumerationProperty, TReadOnlyProperty } from "scenerystack/axon";
@@ -25,10 +25,10 @@ import type { Pipe } from "../model/Pipe.js";
 const KEYBOARD_DRAG_SPEED = 1.5;
 
 /** Thickness of the hoop, view pixels. */
-const HOOP_LINE_WIDTH = 4;
+const HOOP_LINE_WIDTH = 5;
 
 /** How much wider than the pipe the hoop is drawn, view pixels. */
-const HOOP_OVERHANG = 10;
+const HOOP_OVERHANG = 6;
 
 export type FluxMeterLabels = {
   readonly flowRateStringProperty: TReadOnlyProperty<string>;
@@ -38,6 +38,9 @@ export type FluxMeterLabels = {
 
 export class FluxMeterNode extends Node {
   private readonly disposeFluxMeterNode: () => void;
+
+  /** Back half of the hoop; parent in {@link PipeNode.preParticleLayer}. */
+  public readonly backRing: Path;
 
   public constructor(
     fluxMeter: FluxMeter,
@@ -55,15 +58,19 @@ export class FluxMeterNode extends Node {
       accessibleName: accessibleName,
     });
 
-    // The hoop is drawn as an ellipse standing across the pipe, so it reads as a
-    // ring seen at an angle rather than as a bar laid over the picture.
-    const hoop = new Path(null, {
+    const frontRing = new Path(null, {
       stroke: FluidPressureAndFlowColors.accentColorProperty,
       lineWidth: HOOP_LINE_WIDTH,
     });
 
+    this.backRing = new Path(null, {
+      stroke: FluidPressureAndFlowColors.accentColorProperty,
+      lineWidth: HOOP_LINE_WIDTH,
+      opacity: 0.5,
+    });
+
     const flowRateTextProperty = new DerivedProperty(
-      [pipe.flowRateProperty, unitSystemProperty, labels.flowRateStringProperty],
+      [pipe.effectiveFlowRateProperty, unitSystemProperty, labels.flowRateStringProperty],
       (flowRate, system, label) =>
         `${label}: ${formatValue(system.flowRate, flowRate)} ${system.labels(unitLabelGroups).flowRateStringProperty.value}`,
     );
@@ -102,7 +109,7 @@ export class FluxMeterNode extends Node {
       }),
     );
 
-    this.children = [hoop, panel];
+    this.children = [frontRing, panel];
 
     const layout = () => {
       const x = fluxMeter.xProperty.value;
@@ -110,18 +117,37 @@ export class FluxMeterNode extends Node {
       const viewX = modelViewTransform.modelToViewX(x);
       const viewTop = modelViewTransform.modelToViewY(section.topY);
       const viewBottom = modelViewTransform.modelToViewY(section.bottomY);
-      const height = viewBottom - viewTop;
+      const centerY = (viewTop + viewBottom) / 2;
+      const radiusY = (viewBottom - viewTop) / 2 + HOOP_OVERHANG;
 
-      hoop.shape = Shape.ellipse(viewX, (viewTop + viewBottom) / 2, HOOP_OVERHANG, height / 2 + HOOP_OVERHANG, 0);
+      // Split the ellipse so particles can pass between the two arcs.
+      frontRing.shape = new Shape().ellipticalArc(
+        viewX,
+        centerY,
+        radiusY,
+        HOOP_OVERHANG,
+        Math.PI / 2,
+        0,
+        Math.PI,
+        false,
+      );
+      this.backRing.shape = new Shape().ellipticalArc(
+        viewX,
+        centerY,
+        radiusY,
+        HOOP_OVERHANG,
+        Math.PI / 2,
+        Math.PI,
+        0,
+        false,
+      );
+
       panel.centerX = viewX;
       panel.bottom = viewTop - HOOP_OVERHANG - 8;
     };
 
     const layoutMultilink = Multilink.multilinkAny([fluxMeter.xProperty, pipe.shapeVersionProperty], layout);
 
-    // Only x is draggable; the hoop always sits across the pipe, so a vertical
-    // degree of freedom would only let the student pull it off the thing it
-    // measures.
     const positionProperty = new Property(new Vector2(fluxMeter.xProperty.value, 0));
     const syncToModel = (position: Vector2) => {
       fluxMeter.xProperty.value = position.x;
@@ -154,8 +180,12 @@ export class FluxMeterNode extends Node {
 
     const updateVisibility = (isVisible: boolean) => {
       this.visible = isVisible;
+      this.backRing.visible = isVisible;
     };
     fluxMeter.isVisibleProperty.link(updateVisibility);
+    updateVisibility(fluxMeter.isVisibleProperty.value);
+
+    layout();
 
     this.disposeFluxMeterNode = () => {
       layoutMultilink.dispose();

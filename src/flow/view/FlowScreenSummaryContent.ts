@@ -4,9 +4,9 @@
  * The accessible screen summary for the Flow screen.
  *
  * The live paragraph reports the flow rate and how many instruments are out.
- * Not the pipe's shape: a student reshapes it continuously while dragging, and a
- * paragraph that re-announced on every frame of a drag would be unusable. The
- * instruments' own readouts carry what the shape did.
+ * With friction off, reshaping changes only the distribution of speed and the
+ * summary stays quiet. With friction on, the actual flow rate changes too, so
+ * the summary follows that result as well as the instruments' readouts.
  */
 
 import { DerivedProperty, PatternStringProperty } from "scenerystack/axon";
@@ -25,7 +25,7 @@ export class FlowScreenSummaryContent extends ScreenSummaryContent {
 
     const flowRateProperty = new DerivedProperty(
       [
-        model.pipe.flowRateProperty,
+        model.pipe.effectiveFlowRateProperty,
         model.unitSystemProperty,
         unitLabelGroups.metric.flowRateStringProperty,
         unitLabelGroups.english.flowRateStringProperty,

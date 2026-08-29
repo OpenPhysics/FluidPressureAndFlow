@@ -32,7 +32,7 @@ import { getStandardAirPressure } from "../../common/model/airPressure.js";
 import { Barometer } from "../../common/model/Barometer.js";
 import { FluidPressureAndFlowModel, type SharedUnitSystem } from "../../common/model/FluidPressureAndFlowModel.js";
 import { VelocitySensor } from "../../common/model/VelocitySensor.js";
-import { EARTH_GRAVITY, MAX_DT, SLOW_MOTION_FACTOR } from "../../FluidPressureAndFlowConstants.js";
+import { DEFAULT_FLOW_RATE, EARTH_GRAVITY, MAX_DT, SLOW_MOTION_FACTOR } from "../../FluidPressureAndFlowConstants.js";
 import { FluxMeter } from "./FluxMeter.js";
 import { Particle } from "./Particle.js";
 import { Pipe } from "./Pipe.js";
@@ -84,6 +84,14 @@ const PIPE_REFERENCE_PRESSURE = getStandardAirPressure(0);
  * boundary would flicker between a reading and a dash.
  */
 const WALL_MARGIN = 0.05;
+
+/**
+ * Pressure loss through the initial straight pipe at the slider's default
+ * setting, Pa. The value makes the loss measurable while retaining a positive
+ * absolute pressure across the supported range; shape dependence comes from
+ * Hagen–Poiseuille's r⁻⁴ resistance in Pipe.
+ */
+const DEFAULT_FRICTION_PRESSURE_DROP = 12000;
 
 export class FlowModel extends FluidPressureAndFlowModel {
   public readonly pipe = new Pipe();
@@ -145,7 +153,13 @@ export class FlowModel extends FluidPressureAndFlowModel {
 
     const speed = this.pipe.getTweakedVelocity(x, y).magnitude;
     const density = this.fluidDensityProperty.value;
-    const pressure = PIPE_REFERENCE_PRESSURE - density * EARTH_GRAVITY * y - 0.5 * density * speed * speed;
+    const frictionLoss = this.pipe.isFrictionEnabledProperty.value
+      ? DEFAULT_FRICTION_PRESSURE_DROP *
+        (this.pipe.flowRateProperty.value / DEFAULT_FLOW_RATE) *
+        this.pipe.getResistanceFractionAt(x)
+      : 0;
+    const pressure =
+      PIPE_REFERENCE_PRESSURE - density * EARTH_GRAVITY * y - 0.5 * density * speed * speed - frictionLoss;
 
     // Negative pressure is not a pressure; see the class comment.
     return Math.max(0, pressure);

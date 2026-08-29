@@ -99,6 +99,8 @@ const FT3_PER_FT2_PER_SECOND: UnitConversion = { factor: FEET_PER_METER, decimal
 
 const SQUARE_METERS: UnitConversion = { factor: 1, decimalPlaces: 2 };
 const SQUARE_FEET: UnitConversion = { factor: FT2_PER_M2, decimalPlaces: 2 };
+const CUBIC_METERS: UnitConversion = { factor: 1, decimalPlaces: 0 };
+const CUBIC_FEET: UnitConversion = { factor: FT3_PER_M3, decimalPlaces: 0 };
 
 /**
  * The localized unit abbreviations, one per quantity. Any object exposing these
@@ -114,6 +116,7 @@ export type UnitLabelProperties = {
   readonly flowRateStringProperty: TReadOnlyProperty<string>;
   readonly fluxStringProperty: TReadOnlyProperty<string>;
   readonly areaStringProperty: TReadOnlyProperty<string>;
+  readonly volumeStringProperty: TReadOnlyProperty<string>;
 };
 
 /** The three unit-label groups a view must supply to {@link UnitSystem.labels}. */
@@ -134,6 +137,7 @@ export class UnitSystem extends EnumerationValue {
     LITERS_PER_SECOND,
     LITERS_PER_M2_PER_SECOND,
     SQUARE_METERS,
+    CUBIC_METERS,
   );
 
   /**
@@ -150,6 +154,7 @@ export class UnitSystem extends EnumerationValue {
     LITERS_PER_SECOND,
     LITERS_PER_M2_PER_SECOND,
     SQUARE_METERS,
+    CUBIC_METERS,
   );
 
   /** Imperial readouts: psi, ft, ft/s, lb/ft³. */
@@ -162,6 +167,7 @@ export class UnitSystem extends EnumerationValue {
     FT3_PER_SECOND,
     FT3_PER_FT2_PER_SECOND,
     SQUARE_FEET,
+    CUBIC_FEET,
   );
 
   public static readonly enumeration = new Enumeration(UnitSystem);
@@ -174,6 +180,7 @@ export class UnitSystem extends EnumerationValue {
   public readonly flowRate: UnitConversion;
   public readonly flux: UnitConversion;
   public readonly area: UnitConversion;
+  public readonly volume: UnitConversion;
 
   public constructor(
     pressure: UnitConversion,
@@ -184,6 +191,7 @@ export class UnitSystem extends EnumerationValue {
     flowRate: UnitConversion,
     flux: UnitConversion,
     area: UnitConversion,
+    volume: UnitConversion,
   ) {
     super();
     this.pressure = pressure;
@@ -194,6 +202,7 @@ export class UnitSystem extends EnumerationValue {
     this.flowRate = flowRate;
     this.flux = flux;
     this.area = area;
+    this.volume = volume;
   }
 
   /**

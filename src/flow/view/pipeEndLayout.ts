@@ -1,0 +1,40 @@
+/**
+ * pipeEndLayout.ts
+ *
+ * Shared layout math for the bitmap pipe heads at each end of the Flow pipe.
+ * PhET scales the head images vertically with the end cross-section height and
+ * pins their y to the top control point; the constants here are taken from the
+ * HTML5 reference in totality.
+ */
+
+import type { ModelViewTransform2 } from "scenerystack/phetcommon";
+import type { PipeCrossSection } from "../model/PipeCrossSection.js";
+
+/** Horizontal scale applied to every pipe-head bitmap. */
+export const PIPE_HEAD_X_SCALE = 0.36;
+
+/** Reference cross-section height used to compute the vertical head scale (PhET: 2.1 m). */
+export const PIPE_REFERENCE_HEIGHT = 2.1;
+
+/** Smallest allowed vertical scale for a pipe head. */
+export const MIN_PIPE_HEAD_SCALE = 0.18;
+
+/** View-pixel offset from the top control point to the pipe-head node origin. */
+export const LEFT_PIPE_Y_OFFSET = 30;
+
+/** View x of the left pipe-head assembly. */
+export const LEFT_PIPE_X = -49;
+
+/** Inset of the right pipe head from the layout right edge, view pixels. */
+export const RIGHT_PIPE_LAYOUT_INSET = 75;
+
+export type PipeEndLayout = {
+  readonly scaleY: number;
+  readonly viewY: number;
+};
+
+export function getPipeEndLayout(section: PipeCrossSection, modelViewTransform: ModelViewTransform2): PipeEndLayout {
+  const scaleY = Math.max((section.getHeight() / PIPE_REFERENCE_HEIGHT) * PIPE_HEAD_X_SCALE, MIN_PIPE_HEAD_SCALE);
+  const viewY = modelViewTransform.modelToViewY(section.topYProperty.value) - LEFT_PIPE_Y_OFFSET * scaleY;
+  return { scaleY, viewY };
+}

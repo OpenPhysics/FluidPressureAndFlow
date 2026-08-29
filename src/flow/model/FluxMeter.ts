@@ -38,7 +38,7 @@ export class FluxMeter {
     );
 
     this.fluxProperty = new DerivedProperty(
-      [pipe.flowRateProperty, this.areaProperty],
+      [pipe.effectiveFlowRateProperty, this.areaProperty],
       (flowRate, area) => flowRate / area,
     );
   }

@@ -19,7 +19,8 @@
         "gravity": "m/s²",
         "flowRate": "L/s",
         "flux": "L/(m²·s)",
-        "area": "m²"
+        "area": "m²",
+        "volume": "m³"
       },
       "atmospheres": {
         "pressure": "atm",
@@ -29,7 +30,8 @@
         "gravity": "m/s²",
         "flowRate": "L/s",
         "flux": "L/(m²·s)",
-        "area": "m²"
+        "area": "m²",
+        "volume": "m³"
       },
       "english": {
         "pressure": "psi",
@@ -39,7 +41,8 @@
         "gravity": "ft/s²",
         "flowRate": "ft³/s",
         "flux": "ft³/(ft²·s)",
-        "area": "ft²"
+        "area": "ft²",
+        "volume": "ft³"
       }
     },
     "fluidDensity": "Densidad del fluido",
@@ -94,7 +97,8 @@
     "manual": "Manual",
     "matchLeakage": "Igualar la fuga",
     "hose": "Manguera",
-    "fill": "Llenar"
+    "fill": "Llenar",
+    "tankVolume": "Volumen del depósito"
   },
   "a11y": {
     "underPressure": {
@@ -158,6 +162,7 @@
         "measuringTapeCheckbox": "Cinta métrica",
         "unitsControl": "Unidades",
         "fluidDensitySlider": "Densidad del fluido",
+        "tankVolumeSlider": "Volumen del depósito",
         "barometer": "Barómetro",
         "speedometer": "Velocímetro",
         "ruler": "Regla",

@@ -126,10 +126,9 @@ The wall is a **natural cubic spline** through seven draggable cross-sections
 handles would put a corner — and so a discontinuity in area, speed and pressure —
 at every one.
 
-The **friction** checkbox multiplies a particle's horizontal velocity by a
-parabola that is 1 at the centreline and reaches 0 slightly outside each wall
-(not *at* the wall — particles would pile up at the corners forever). See "Known
-simplifications".
+The **friction** checkbox adds a laminar velocity profile and a
+Hagen–Poiseuille resistance. At a fixed slider (pump) setting, a narrower pipe
+therefore carries less fluid, and static pressure falls downstream.
 
 **Flux meter**: `flux = Q / A(x)`, shown alongside `A(x)` and `Q` so the three
 can be watched trading off.
@@ -170,8 +169,9 @@ attached. Volume leaving per step is `v · A_eff · dt`, and each step emits one
 drop carrying exactly that volume — so the tank loses precisely what the drops
 take away. Drops then fly ballistically under `g`.
 
-Pressure in the tank is hydrostatic, as on screen 1. Everywhere else — including
-inside the jet — the model reports air pressure.
+Pressure in the tank is hydrostatic, as on screen 1. Inside an attached hose it
+follows the same hydrostatic elevation term relative to the open nozzle; in the
+free jet it is atmospheric.
 
 There is deliberately **no gravity control** on this screen. PhET's design
 document is explicit: a student should be able to *measure* `g` from the efflux
@@ -227,13 +227,10 @@ constant that value came from is documented upstream as "air pressure at 500 ft"
 (≈152.4 m). The discrepancy is under a readout digit over the ~30 m the sim
 actually exposes, and the value is kept so readouts match upstream.
 
-**6. Friction on the Flow screen is a velocity profile only.**
-It changes how fast a tracer near the wall moves. It does **not** produce a
-pressure drop along the pipe and does **not** change the flux — which is what
-real viscosity would do (Hagen–Poiseuille). This is upstream issue
-[#314](https://github.com/phetsims/fluid-pressure-and-flow/issues/314), and the
-complaint is correct. `tests/flow/Pipe.test.ts` pins the current behaviour so
-that fixing it later is a deliberate change rather than an accident.
+**6. Friction is a relative, not material-specific, viscosity model.**
+It uses the Hagen–Poiseuille fourth-power radius relationship to produce a
+pressure loss and reduced flow through a constriction, but the single checkbox
+does not expose a viscosity value or differentiate water from honey.
 
 **7. Pressure on the Flow screen is clamped at zero.**
 Bernoulli's `−½ρv²` term can be driven negative in a narrow, fast pipe. Negative
@@ -242,10 +239,9 @@ pressure is meaningless; it is a sign the model has left its domain. The pipe's
 ([#199](https://github.com/phetsims/fluid-pressure-and-flow/issues/199)), so the
 reported value is additionally clamped at 0.
 
-**8. The barometer reads air pressure inside the hose.**
-The jet really is at atmospheric pressure once it has left the nozzle, but the
-sim reports air pressure inside the hose too, which is wrong. Upstream design
-question [#322](https://github.com/phetsims/fluid-pressure-and-flow/issues/322).
+**8. The hose has a constant-speed approximation.**
+The static pressure changes with elevation through the hose and equals ambient
+pressure at the open nozzle, but bends and wall losses in the hose are omitted.
 
 **9. The Water Tower's outlet area is tuned, not derived.**
 `A_eff = 2.8 m²` is not `π(d/2)²`. A real orifice discharges less than its

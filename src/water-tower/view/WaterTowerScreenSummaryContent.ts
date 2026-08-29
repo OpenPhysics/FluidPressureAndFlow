@@ -11,7 +11,6 @@
 import { DerivedProperty, PatternStringProperty } from "scenerystack/axon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
-import { TANK_VOLUME } from "../model/WaterTower.js";
 import type { WaterTowerModel } from "../model/WaterTowerModel.js";
 
 export class WaterTowerScreenSummaryContent extends ScreenSummaryContent {
@@ -20,8 +19,9 @@ export class WaterTowerScreenSummaryContent extends ScreenSummaryContent {
     const a11y = strings.getWaterTowerA11yStrings();
     const common = strings.getCommonStrings();
 
-    const fillPercentProperty = new DerivedProperty([model.waterTower.fluidVolumeProperty], (volume) =>
-      Math.round((100 * volume) / TANK_VOLUME),
+    const fillPercentProperty = new DerivedProperty(
+      [model.waterTower.fluidVolumeProperty, model.waterTower.capacityProperty],
+      (volume, capacity) => Math.round((100 * volume) / capacity),
     );
 
     const holeStateProperty = new DerivedProperty(

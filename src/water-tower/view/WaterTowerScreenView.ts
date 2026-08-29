@@ -11,13 +11,14 @@
  */
 
 import { BooleanProperty, DerivedProperty, Property } from "scenerystack/axon";
-import { Bounds2, Vector2 } from "scenerystack/dot";
+import { Bounds2, Range, Vector2 } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { Node } from "scenerystack/scenery";
+import { Node, Text, VBox } from "scenerystack/scenery";
 import { FaucetNode, MeasuringTapeNode, ResetAllButton, TimeControlNode, TimeSpeed } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/FluidPressureAndFlowButtonOptions.js";
+import { FluidPressureAndFlowPanel } from "../../common/FluidPressureAndFlowPanel.js";
 import type { Barometer } from "../../common/model/Barometer.js";
 import { formatValue } from "../../common/model/units.js";
 import type { VelocitySensor } from "../../common/model/VelocitySensor.js";
@@ -27,9 +28,11 @@ import { FluidDensityAccordionBox } from "../../common/view/FluidDensityAccordio
 import { FPAFRulerNode } from "../../common/view/FPAFRulerNode.js";
 import { SensorToolboxNode } from "../../common/view/SensorToolboxNode.js";
 import { SkyGroundNode } from "../../common/view/SkyGroundNode.js";
+import { UnitSlider } from "../../common/view/UnitSlider.js";
 import { VelocitySensorNode } from "../../common/view/VelocitySensorNode.js";
 import { PANEL_SPACING, SCREEN_VIEW_MARGIN } from "../../FluidPressureAndFlowConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
+import { MAX_TANK_VOLUME, MIN_TANK_VOLUME } from "../model/WaterTower.js";
 import { FAUCET_POSITION, type WaterTowerModel } from "../model/WaterTowerModel.js";
 import { FaucetControlPanel } from "./FaucetControlPanel.js";
 import { HoseNode } from "./HoseNode.js";
@@ -250,6 +253,31 @@ export class WaterTowerScreenView extends ScreenView {
     faucetControls.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(faucetControls);
 
+    const tankVolumeControl = new FluidPressureAndFlowPanel(
+      new VBox({
+        align: "left",
+        spacing: 4,
+        children: [
+          new Text(screenStrings.tankVolumeStringProperty, { font: "13px sans-serif" }),
+          new UnitSlider(
+            model.waterTower.capacityProperty,
+            new Range(MIN_TANK_VOLUME, MAX_TANK_VOLUME),
+            model.unitSystemProperty,
+            {
+              conversionFor: (system) => system.volume,
+              unitsLabelFor: (system) => system.labels(unitLabelGroups).volumeStringProperty,
+              majorTicks: [],
+              accessibleName: a11y.controls.tankVolumeSliderStringProperty,
+              trackWidth: 140,
+            },
+          ),
+        ],
+      }),
+    );
+    tankVolumeControl.left = faucetControls.left;
+    tankVolumeControl.top = faucetControls.bottom + PANEL_SPACING;
+    this.addChild(tankVolumeControl);
+
     const controlPanel = new WaterTowerControlPanel(
       this.isRulerVisibleProperty,
       this.isMeasuringTapeVisibleProperty,
@@ -303,6 +331,7 @@ export class WaterTowerScreenView extends ScreenView {
           waterTowerNode,
           faucet,
           faucetControls,
+          tankVolumeControl,
           hoseNode,
           toolbox,
           sensorLayer,

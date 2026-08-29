@@ -36,6 +36,10 @@ export const HOLE_SIZE = 1;
 /** Full capacity of the tank, m³. */
 export const TANK_VOLUME = Math.PI * TANK_RADIUS * TANK_RADIUS * TANK_HEIGHT;
 
+/** Smallest and largest capacities available to the student, m³. */
+export const MIN_TANK_VOLUME = Math.PI * 3.5 * 3.5 * TANK_HEIGHT;
+export const MAX_TANK_VOLUME = Math.PI * 6.5 * 6.5 * TANK_HEIGHT;
+
 /**
  * How full the tank starts, as a fraction of capacity.
  *
@@ -52,6 +56,12 @@ export class WaterTower {
   /** Volume of fluid in the tank, m³. */
   public readonly fluidVolumeProperty = new NumberProperty(TANK_VOLUME * INITIAL_FILL_FRACTION);
 
+  /**
+   * Tank capacity, m³. Changing it alters the tank radius while preserving the
+   * water level, isolating volume from head as requested in upstream issue #336.
+   */
+  public readonly capacityProperty = new NumberProperty(TANK_VOLUME);
+
   /** Whether the hole in the side is uncovered. Closed at first, so nothing happens until asked. */
   public readonly isHoleOpenProperty = new BooleanProperty(false);
 
@@ -59,12 +69,27 @@ export class WaterTower {
   public readonly isFullProperty: TReadOnlyProperty<boolean>;
 
   public constructor() {
-    this.isFullProperty = new DerivedProperty([this.fluidVolumeProperty], (volume) => volume >= TANK_VOLUME - 1e-9);
+    let previousCapacity = this.capacityProperty.value;
+    this.capacityProperty.link((capacity) => {
+      const previousArea = previousCapacity / TANK_HEIGHT;
+      const currentLevel = this.fluidVolumeProperty.value / previousArea;
+      this.fluidVolumeProperty.value = Math.min(capacity, currentLevel * (capacity / TANK_HEIGHT));
+      previousCapacity = capacity;
+    });
+    this.isFullProperty = new DerivedProperty(
+      [this.fluidVolumeProperty, this.capacityProperty],
+      (volume, capacity) => volume >= capacity - 1e-9,
+    );
+  }
+
+  /** Radius implied by the current capacity, metres. */
+  public getRadius(): number {
+    return Math.sqrt(this.capacityProperty.value / (Math.PI * TANK_HEIGHT));
   }
 
   /** Depth of fluid standing in the tank, metres. */
   public getFluidLevel(): number {
-    return this.fluidVolumeProperty.value / (Math.PI * TANK_RADIUS * TANK_RADIUS);
+    return this.fluidVolumeProperty.value / (Math.PI * this.getRadius() * this.getRadius());
   }
 
   /** Altitude of the fluid's surface, metres. */
@@ -75,16 +100,17 @@ export class WaterTower {
   /** Where fluid leaves the tank: the hole in the right-hand wall, at the base. */
   public getHolePosition(): Vector2 {
     const base = this.baseCenterProperty.value;
-    return new Vector2(base.x + TANK_RADIUS, base.y + HOLE_SIZE / 2);
+    return new Vector2(base.x + this.getRadius(), base.y + HOLE_SIZE / 2);
   }
 
   /** Fills the tank to capacity. Wired to the Fill button. */
   public fill(): void {
-    this.fluidVolumeProperty.value = TANK_VOLUME;
+    this.fluidVolumeProperty.value = this.capacityProperty.value;
   }
 
   public reset(): void {
     this.baseCenterProperty.reset();
+    this.capacityProperty.reset();
     this.fluidVolumeProperty.reset();
     this.isHoleOpenProperty.reset();
   }

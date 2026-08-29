@@ -1,0 +1,38 @@
+{
+  "pipeLeftFront.png": {
+    "license": "contact phethelp@colorado.edu",
+    "notes": "created by Bryce Gruneich",
+    "projectURL": "https://phet.colorado.edu",
+    "text": ["Copyright 2002-2015 University of Colorado Boulder"]
+  },
+  "pipeLeftBack.png": {
+    "license": "contact phethelp@colorado.edu",
+    "notes": "created by Bryce Gruneich",
+    "projectURL": "https://phet.colorado.edu",
+    "text": ["Copyright 2002-2015 University of Colorado Boulder"]
+  },
+  "pipeRight.png": {
+    "license": "contact phethelp@colorado.edu",
+    "notes": "created by Bryce Gruneich",
+    "projectURL": "https://phet.colorado.edu",
+    "text": ["Copyright 2002-2015 University of Colorado Boulder"]
+  },
+  "pipeSegment.png": {
+    "license": "contact phethelp@colorado.edu",
+    "notes": "created by Bryce Gruneich",
+    "projectURL": "https://phet.colorado.edu",
+    "text": ["Copyright 2002-2015 University of Colorado Boulder"]
+  },
+  "handleWithBar.png": {
+    "license": "contact phethelp@colorado.edu",
+    "notes": "created by Bryce Gruneich",
+    "projectURL": "https://phet.colorado.edu",
+    "text": ["Copyright 2002-2015 University of Colorado Boulder"]
+  },
+  "injectorBulbCropped.png": {
+    "license": "contact phethelp@colorado.edu",
+    "notes": "created by Bryce Gruneich",
+    "projectURL": "https://phet.colorado.edu",
+    "text": ["Copyright 2002-2015 University of Colorado Boulder"]
+  }
+}
