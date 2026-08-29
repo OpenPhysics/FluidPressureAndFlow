@@ -41,9 +41,13 @@ export const HOLE_SIZE = 1;
 /** Full capacity of the tank, m³. */
 export const TANK_VOLUME = Math.PI * TANK_RADIUS * TANK_RADIUS * TANK_HEIGHT;
 
+/** Smallest and largest tank radii the capacity slider can produce, metres. */
+const MIN_TANK_RADIUS = 3.5;
+const MAX_TANK_RADIUS = 6.5;
+
 /** Smallest and largest capacities available to the student, m³. */
-export const MIN_TANK_VOLUME = Math.PI * 3.5 * 3.5 * TANK_HEIGHT;
-export const MAX_TANK_VOLUME = Math.PI * 6.5 * 6.5 * TANK_HEIGHT;
+export const MIN_TANK_VOLUME = Math.PI * MIN_TANK_RADIUS * MIN_TANK_RADIUS * TANK_HEIGHT;
+export const MAX_TANK_VOLUME = Math.PI * MAX_TANK_RADIUS * MAX_TANK_RADIUS * TANK_HEIGHT;
 
 /**
  * How full the tank starts, as a fraction of capacity.

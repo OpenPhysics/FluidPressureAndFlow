@@ -19,6 +19,7 @@
 import type { BooleanProperty, EnumerationProperty, TReadOnlyProperty } from "scenerystack/axon";
 import { HSeparator, Text, VBox } from "scenerystack/scenery";
 import { AquaRadioButtonGroup, Checkbox } from "scenerystack/sun";
+import { CHECKBOX_OPTIONS } from "../../common/FluidPressureAndFlowControlOptions.js";
 import { FluidPressureAndFlowPanel } from "../../common/FluidPressureAndFlowPanel.js";
 import type { UnitSystem } from "../../common/model/units.js";
 import { UnitsControlPanel, type UnitsControlPanelLabels } from "../../common/view/UnitsControlPanel.js";
@@ -62,7 +63,7 @@ export class UnderPressureControlPanel extends VBox {
         fill: FluidPressureAndFlowColors.textColorProperty,
         maxWidth: CONTENT_WIDTH - 30,
       }),
-      { boxWidth: 16, accessibleName: accessibleNames.rulerCheckboxStringProperty },
+      { ...CHECKBOX_OPTIONS, accessibleName: accessibleNames.rulerCheckboxStringProperty },
     );
 
     const gridCheckbox = new Checkbox(
@@ -72,7 +73,7 @@ export class UnderPressureControlPanel extends VBox {
         fill: FluidPressureAndFlowColors.textColorProperty,
         maxWidth: CONTENT_WIDTH - 30,
       }),
-      { boxWidth: 16, accessibleName: accessibleNames.gridCheckboxStringProperty },
+      { ...CHECKBOX_OPTIONS, accessibleName: accessibleNames.gridCheckboxStringProperty },
     );
 
     const atmosphereButtons = new AquaRadioButtonGroup(

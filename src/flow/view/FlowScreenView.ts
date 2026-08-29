@@ -139,9 +139,9 @@ export class FlowScreenView extends ScreenView {
 
     // ── Instruments ───────────────────────────────────────────────────────────
     const toolDragBounds = new Bounds2(
-      modelViewTransform.viewToModelX(this.layoutBounds.minX + 10),
+      modelViewTransform.viewToModelX(this.layoutBounds.minX + SCREEN_VIEW_MARGIN),
       -4,
-      modelViewTransform.viewToModelX(this.layoutBounds.maxX - 10),
+      modelViewTransform.viewToModelX(this.layoutBounds.maxX - SCREEN_VIEW_MARGIN),
       MAX_TOOL_ALTITUDE,
     );
     const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.centerX), 1.4);

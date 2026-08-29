@@ -149,10 +149,10 @@ export class WaterTowerScreenView extends ScreenView {
 
     // ── Instruments ───────────────────────────────────────────────────────────
     const toolDragBounds = new Bounds2(
-      modelViewTransform.viewToModelX(this.layoutBounds.minX + 10),
+      modelViewTransform.viewToModelX(this.layoutBounds.minX + SCREEN_VIEW_MARGIN),
       0,
-      modelViewTransform.viewToModelX(this.layoutBounds.maxX - 10),
-      modelViewTransform.viewToModelY(this.layoutBounds.minY + 10),
+      modelViewTransform.viewToModelX(this.layoutBounds.maxX - SCREEN_VIEW_MARGIN),
+      modelViewTransform.viewToModelY(this.layoutBounds.minY + SCREEN_VIEW_MARGIN),
     );
     const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.minX + 172), 24);
 

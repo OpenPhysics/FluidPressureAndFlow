@@ -14,18 +14,14 @@
  */
 
 import type { EnumerationProperty, NumberProperty, TReadOnlyProperty } from "scenerystack/axon";
-import { Text } from "scenerystack/scenery";
 import { AccordionBox } from "scenerystack/sun";
-import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
-import {
-  EARTH_GRAVITY,
-  GRAVITY_RANGE,
-  JUPITER_GRAVITY,
-  MARS_GRAVITY,
-  PANEL_CORNER_RADIUS,
-} from "../../FluidPressureAndFlowConstants.js";
+import { EARTH_GRAVITY, GRAVITY_RANGE, JUPITER_GRAVITY, MARS_GRAVITY } from "../../FluidPressureAndFlowConstants.js";
 import type { UnitLabelGroups, UnitSystem } from "../model/units.js";
-import { ACCORDION_BOX_SHRINK_WHEN_COLLAPSED } from "./pinAccordionBox.js";
+import {
+  ACCORDION_BOX_CHROME_OPTIONS,
+  ACCORDION_BOX_SHRINK_WHEN_COLLAPSED,
+  createAccordionBoxTitle,
+} from "./pinAccordionBox.js";
 import { UnitSlider } from "./UnitSlider.js";
 
 export type GravityLabels = {
@@ -55,24 +51,12 @@ export class GravityAccordionBox extends AccordionBox {
     });
 
     super(slider, {
-      titleNode: new Text(labels.gravityStringProperty, {
-        font: "bold 13px sans-serif",
-        fill: FluidPressureAndFlowColors.textColorProperty,
-        maxWidth: 150,
-      }),
+      titleNode: createAccordionBoxTitle(labels.gravityStringProperty),
       ...ACCORDION_BOX_SHRINK_WHEN_COLLAPSED,
+      ...ACCORDION_BOX_CHROME_OPTIONS,
       // Under Pressure is the only screen with this box, and gravity is one of
       // the two quantities the screen exists to let a student vary.
       expandedDefaultValue: true,
-      titleAlignX: "center",
-      cornerRadius: PANEL_CORNER_RADIUS,
-      fill: FluidPressureAndFlowColors.panelBackgroundColorProperty,
-      stroke: FluidPressureAndFlowColors.panelBorderColorProperty,
-      contentXMargin: 10,
-      contentYMargin: 5,
-      buttonXMargin: 8,
-      buttonYMargin: 4,
-      expandCollapseButtonOptions: { sideLength: 16 },
     });
   }
 }

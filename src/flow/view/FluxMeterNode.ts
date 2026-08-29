@@ -31,6 +31,21 @@ const HOOP_LINE_WIDTH = 7;
 /** How much wider than the pipe the hoop is drawn, view pixels. */
 const HOOP_OVERHANG = 8;
 
+/** Opacity of the back half of the hoop, so it reads as behind the fluid without disappearing. */
+const BACK_RING_OPACITY = 0.5;
+
+const READOUT_FONT = "12px sans-serif";
+const READOUT_MAX_WIDTH = 180;
+const READOUT_SPACING = 3;
+
+function createReadoutText(textProperty: TReadOnlyProperty<string>): Text {
+  return new Text(textProperty, {
+    font: READOUT_FONT,
+    fill: FluidPressureAndFlowColors.textColorProperty,
+    maxWidth: READOUT_MAX_WIDTH,
+  });
+}
+
 export type FluxMeterLabels = {
   readonly flowRateStringProperty: TReadOnlyProperty<string>;
   readonly areaStringProperty: TReadOnlyProperty<string>;
@@ -67,7 +82,7 @@ export class FluxMeterNode extends Node {
     this.backRing = new Path(null, {
       stroke: FluidPressureAndFlowColors.accentColorProperty,
       lineWidth: HOOP_LINE_WIDTH,
-      opacity: 0.5,
+      opacity: BACK_RING_OPACITY,
     });
 
     const flowRateTextProperty = new DerivedProperty(
@@ -89,23 +104,11 @@ export class FluxMeterNode extends Node {
     const panel = new FluidPressureAndFlowPanel(
       new VBox({
         align: "left",
-        spacing: 3,
+        spacing: READOUT_SPACING,
         children: [
-          new Text(flowRateTextProperty, {
-            font: "12px sans-serif",
-            fill: FluidPressureAndFlowColors.textColorProperty,
-            maxWidth: 180,
-          }),
-          new Text(areaTextProperty, {
-            font: "12px sans-serif",
-            fill: FluidPressureAndFlowColors.textColorProperty,
-            maxWidth: 180,
-          }),
-          new Text(fluxTextProperty, {
-            font: "12px sans-serif",
-            fill: FluidPressureAndFlowColors.textColorProperty,
-            maxWidth: 180,
-          }),
+          createReadoutText(flowRateTextProperty),
+          createReadoutText(areaTextProperty),
+          createReadoutText(fluxTextProperty),
         ],
       }),
     );

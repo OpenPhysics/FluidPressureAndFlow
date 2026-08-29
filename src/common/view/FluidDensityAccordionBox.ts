@@ -15,18 +15,14 @@
  */
 
 import type { EnumerationProperty, NumberProperty, TReadOnlyProperty } from "scenerystack/axon";
-import { Text } from "scenerystack/scenery";
 import { AccordionBox } from "scenerystack/sun";
-import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
-import {
-  DENSITY_RANGE,
-  GASOLINE_DENSITY,
-  HONEY_DENSITY,
-  PANEL_CORNER_RADIUS,
-  WATER_DENSITY,
-} from "../../FluidPressureAndFlowConstants.js";
+import { DENSITY_RANGE, GASOLINE_DENSITY, HONEY_DENSITY, WATER_DENSITY } from "../../FluidPressureAndFlowConstants.js";
 import type { UnitLabelGroups, UnitSystem } from "../model/units.js";
-import { ACCORDION_BOX_SHRINK_WHEN_COLLAPSED } from "./pinAccordionBox.js";
+import {
+  ACCORDION_BOX_CHROME_OPTIONS,
+  ACCORDION_BOX_SHRINK_WHEN_COLLAPSED,
+  createAccordionBoxTitle,
+} from "./pinAccordionBox.js";
 import { UnitSlider } from "./UnitSlider.js";
 
 export type FluidDensityLabels = {
@@ -67,22 +63,10 @@ export class FluidDensityAccordionBox extends AccordionBox {
     });
 
     super(slider, {
-      titleNode: new Text(labels.fluidDensityStringProperty, {
-        font: "bold 13px sans-serif",
-        fill: FluidPressureAndFlowColors.textColorProperty,
-        maxWidth: 150,
-      }),
+      titleNode: createAccordionBoxTitle(labels.fluidDensityStringProperty),
       ...ACCORDION_BOX_SHRINK_WHEN_COLLAPSED,
+      ...ACCORDION_BOX_CHROME_OPTIONS,
       expandedDefaultValue: providedOptions?.expandedDefaultValue ?? false,
-      titleAlignX: "center",
-      cornerRadius: PANEL_CORNER_RADIUS,
-      fill: FluidPressureAndFlowColors.panelBackgroundColorProperty,
-      stroke: FluidPressureAndFlowColors.panelBorderColorProperty,
-      contentXMargin: 10,
-      contentYMargin: 5,
-      buttonXMargin: 8,
-      buttonYMargin: 4,
-      expandCollapseButtonOptions: { sideLength: 16 },
     });
   }
 }

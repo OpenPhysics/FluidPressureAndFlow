@@ -227,9 +227,9 @@ export class UnderPressureScreenView extends ScreenView {
 
     // ── Instruments ───────────────────────────────────────────────────────────
     const toolDragBounds = new Bounds2(
-      modelViewTransform.viewToModelX(this.layoutBounds.minX + 10),
+      modelViewTransform.viewToModelX(this.layoutBounds.minX + SCREEN_VIEW_MARGIN),
       -MAX_POOL_HEIGHT,
-      modelViewTransform.viewToModelX(this.layoutBounds.maxX - 10),
+      modelViewTransform.viewToModelX(this.layoutBounds.maxX - SCREEN_VIEW_MARGIN),
       MAX_TOOL_ALTITUDE,
     );
 
@@ -303,8 +303,8 @@ export class UnderPressureScreenView extends ScreenView {
     // Down the left edge, starting just below the ground line: the four scenes are
     // read against the pool they switch between, and the sky above has to stay
     // clear for the barometers a student drags out of the tray.
-    sceneRadioButtons.left = this.layoutBounds.minX + 10;
-    sceneRadioButtons.top = GROUND_VIEW_Y + 10;
+    sceneRadioButtons.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
+    sceneRadioButtons.top = GROUND_VIEW_Y + SCREEN_VIEW_MARGIN;
     this.addChild(sceneRadioButtons);
 
     const controlPanel = new UnderPressureControlPanel(

@@ -43,6 +43,23 @@ const TIP_HALF_WIDTH = 7;
 /** Metres the sampling point moves per arrow-key press. */
 const KEYBOARD_DRAG_SPEED = 3;
 
+const READOUT_FONT = "bold 12px sans-serif";
+
+/** Width of the digital readout text, relative to the dial radius — narrower than the background behind it. */
+const READOUT_TEXT_MAX_WIDTH_RATIO = 1.9;
+
+/** Width of the digital readout's background pill, relative to the dial radius. */
+const READOUT_BACKGROUND_WIDTH_RATIO = 2.1;
+
+const READOUT_BACKGROUND_HEIGHT = 19;
+const READOUT_BACKGROUND_CORNER_RADIUS = 3;
+
+/** How far the readout pill tucks up under the dial, view pixels. */
+const READOUT_OVERLAP_WITH_GAUGE = 10;
+
+/** How far the tip tucks up under the readout pill, view pixels. */
+const TIP_OVERLAP_WITH_READOUT = 2;
+
 export type BarometerNodeOptions = {
   /** Where the barometer returns to when dropped back on the toolbox. */
   readonly homePosition: Vector2;
@@ -99,17 +116,25 @@ export class BarometerNode extends Node {
     // it: GaugeNode already writes its own label across the middle of the face,
     // and stacking a second readout there leaves both unreadable.
     const readoutText = new Text(pressureTextProperty, {
-      font: "bold 12px sans-serif",
+      font: READOUT_FONT,
       fill: FluidPressureAndFlowColors.controlSurfaceTextColorProperty,
-      maxWidth: GAUGE_RADIUS * 1.9,
+      maxWidth: GAUGE_RADIUS * READOUT_TEXT_MAX_WIDTH_RATIO,
     });
-    const readoutBackground = new Rectangle(0, 0, GAUGE_RADIUS * 2.1, 19, 3, 3, {
-      fill: FluidPressureAndFlowColors.gaugeFaceColorProperty,
-      stroke: FluidPressureAndFlowColors.gaugeRimColorProperty,
-      lineWidth: 2,
-      centerX: gauge.centerX,
-      top: gauge.bottom - 10,
-    });
+    const readoutBackground = new Rectangle(
+      0,
+      0,
+      GAUGE_RADIUS * READOUT_BACKGROUND_WIDTH_RATIO,
+      READOUT_BACKGROUND_HEIGHT,
+      READOUT_BACKGROUND_CORNER_RADIUS,
+      READOUT_BACKGROUND_CORNER_RADIUS,
+      {
+        fill: FluidPressureAndFlowColors.gaugeFaceColorProperty,
+        stroke: FluidPressureAndFlowColors.gaugeRimColorProperty,
+        lineWidth: 2,
+        centerX: gauge.centerX,
+        top: gauge.bottom - READOUT_OVERLAP_WITH_GAUGE,
+      },
+    );
     const centerReadout = () => {
       readoutText.center = readoutBackground.center;
     };
@@ -119,7 +144,7 @@ export class BarometerNode extends Node {
       new Shape().moveTo(-TIP_HALF_WIDTH, 0).lineTo(TIP_HALF_WIDTH, 0).lineTo(0, TIP_HEIGHT).close(),
       {
         fill: FluidPressureAndFlowColors.gaugeRimColorProperty,
-        top: readoutBackground.bottom - 2,
+        top: readoutBackground.bottom - TIP_OVERLAP_WITH_READOUT,
         centerX: gauge.centerX,
       },
     );
