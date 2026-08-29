@@ -28,6 +28,9 @@ const MINOR_SPACING = 0.5;
 /** Every this many lines gets a label. */
 const LINES_PER_LABEL = 2;
 
+/** Slack added to the loop bound so float error doesn't drop the last grid line. */
+const LOOP_EPSILON = 1e-9;
+
 export class PoolGridNode extends Node {
   private readonly disposePoolGridNode: () => void;
 
@@ -50,7 +53,7 @@ export class PoolGridNode extends Node {
     const labelDepths: number[] = [];
 
     let index = 0;
-    for (let depth = MINOR_SPACING; depth <= MAX_POOL_HEIGHT + 1e-9; depth += MINOR_SPACING) {
+    for (let depth = MINOR_SPACING; depth <= MAX_POOL_HEIGHT + LOOP_EPSILON; depth += MINOR_SPACING) {
       index++;
       const y = modelViewTransform.modelToViewY(-depth);
       lines.moveTo(modelViewTransform.modelToViewX(poolBounds.minX), y);

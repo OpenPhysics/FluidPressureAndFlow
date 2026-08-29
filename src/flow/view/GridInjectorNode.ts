@@ -17,6 +17,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, Image, Node } from "scenerystack/scenery";
 import { RoundPushButton } from "scenerystack/sun";
 import { injectorBulbImage } from "../../common/view/images.js";
+import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 import type { Pipe } from "../model/Pipe.js";
 
 /** Radius of the plunger head, view pixels. */
@@ -57,11 +58,11 @@ export class GridInjectorNode extends Node {
     const bulb = new Image(injectorBulbImage, { scale: BULB_SCALE });
 
     const button = new RoundPushButton({
-      content: new Circle(PLUNGER_RADIUS, { fill: "red" }),
+      content: new Circle(PLUNGER_RADIUS, { fill: FluidPressureAndFlowColors.injectorButtonColorProperty }),
       listener: inject,
       enabledProperty: isReadyProperty,
-      baseColor: "red",
-      stroke: "red",
+      baseColor: FluidPressureAndFlowColors.injectorButtonColorProperty,
+      stroke: FluidPressureAndFlowColors.injectorButtonColorProperty,
       accessibleName: accessibleName,
       centerX: bulb.centerX,
       top: bulb.top + PLUNGER_Y_OFFSET,

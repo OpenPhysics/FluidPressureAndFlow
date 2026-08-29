@@ -54,6 +54,9 @@ export const MAX_TANK_VOLUME = Math.PI * 6.5 * 6.5 * TANK_HEIGHT;
  */
 const INITIAL_FILL_FRACTION = 0.8;
 
+/** Volume slack (m³) below capacity that still counts as "full", to absorb float error. */
+const FULL_VOLUME_TOLERANCE = 1e-9;
+
 export class WaterTower {
   /** Centre of the tank's base, model coordinates (metres). */
   public readonly baseCenterProperty = new Property(new Vector2(0, INITIAL_TANK_BASE_Y));
@@ -83,7 +86,7 @@ export class WaterTower {
     });
     this.isFullProperty = new DerivedProperty(
       [this.fluidVolumeProperty, this.capacityProperty],
-      (volume, capacity) => volume >= capacity - 1e-9,
+      (volume, capacity) => volume >= capacity - FULL_VOLUME_TOLERANCE,
     );
   }
 

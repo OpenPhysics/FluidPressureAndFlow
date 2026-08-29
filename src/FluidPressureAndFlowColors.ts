@@ -162,6 +162,18 @@ const FluidPressureAndFlowColors = {
     projector: "#000000",
   }),
 
+  /** Brown stroke around the Flow pipe's flexible middle section, from the PhET artwork. */
+  pipeWallColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "pipeWall", {
+    default: "#613705",
+    projector: "#4a2a04",
+  }),
+
+  /** The grid-injector plunger button: bulb, fill, and stroke all share this red. */
+  injectorButtonColorProperty: new ProfileColorProperty(FluidPressureAndFlowNamespace, "injectorButton", {
+    default: "#ff0000",
+    projector: "#cc0000",
+  }),
+
   // ── Instruments ─────────────────────────────────────────────────────────────
 
   /** Face of a barometer dial. */

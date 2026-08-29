@@ -31,6 +31,7 @@ import { SensorToolboxNode } from "../../common/view/SensorToolboxNode.js";
 import { SkyGroundNode } from "../../common/view/SkyGroundNode.js";
 import { UnitSlider } from "../../common/view/UnitSlider.js";
 import { VelocitySensorNode } from "../../common/view/VelocitySensorNode.js";
+import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 import { LAYOUT_BOUNDS, PANEL_SPACING, SCREEN_VIEW_MARGIN } from "../../FluidPressureAndFlowConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import { MAX_TANK_VOLUME, MIN_TANK_VOLUME } from "../model/WaterTower.js";
@@ -242,7 +243,7 @@ export class WaterTowerScreenView extends ScreenView {
       modelViewTransform: modelViewTransform,
       basePositionProperty: new Property(new Vector2(2, 3)),
       tipPositionProperty: new Property(new Vector2(8, 3)),
-      textColor: "black",
+      textColor: FluidPressureAndFlowColors.textColorProperty,
       dragBounds: toolDragBounds,
     });
     this.addChild(measuringTape);

@@ -71,6 +71,9 @@ export const TOP_OF_GRASS = 0.025;
 /** Fraction of the remaining displacement shed per step once the weights are off. */
 const RELAXATION_FRACTION = 0.1;
 
+/** Displacement (metres) below which the column is considered settled. */
+const EQUILIBRIUM_TOLERANCE = 1e-3;
+
 /**
  * Sub-steps per frame while integrating the masses. The stack is stiff — a block
  * resting on water is a near-rigid contact — so a single frame-sized step lets
@@ -249,7 +252,7 @@ export class ChamberPoolModel extends Pool {
    * drop-target line only while the student can actually act on it.
    */
   public isAtEquilibrium(): boolean {
-    return Math.abs(this.getDisplacement() - this.previousDisplacement) < 1e-3;
+    return Math.abs(this.getDisplacement() - this.previousDisplacement) < EQUILIBRIUM_TOLERANCE;
   }
 
   /** How far the left column has been pushed below its resting height, metres. */
