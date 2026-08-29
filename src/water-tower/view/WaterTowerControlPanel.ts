@@ -4,9 +4,8 @@
  * The Water Tower screen's right-hand controls: the hose toggle, the two measuring
  * tools, and the unit-system chooser.
  *
- * The unit system gets its own box, as on the other two screens: it is set once
- * and left alone, and separating it keeps the toggles above it at a constant
- * height however tall the unit list grows in translation.
+ * Each tool checkbox carries a pictorial icon on the right, matching PhET's
+ * Water Tower control panel layout.
  */
 
 import type { BooleanProperty, EnumerationProperty, TReadOnlyProperty } from "scenerystack/axon";
@@ -18,6 +17,12 @@ import type { UnitSystem } from "../../common/model/units.js";
 import { UnitsControlPanel, type UnitsControlPanelLabels } from "../../common/view/UnitsControlPanel.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 import { PANEL_SPACING } from "../../FluidPressureAndFlowConstants.js";
+import {
+  createHoseIcon,
+  createLabeledToolRow,
+  createMeasuringTapeIcon,
+  createRulerIcon,
+} from "./createWaterTowerToolIcons.js";
 
 const LABEL_FONT = "13px sans-serif";
 
@@ -46,33 +51,57 @@ export class WaterTowerControlPanel extends VBox {
     labels: WaterTowerControlPanelLabels,
     accessibleNames: WaterTowerControlPanelAccessibleNames,
   ) {
+    const label = (stringProperty: TReadOnlyProperty<string>) =>
+      new Text(stringProperty, {
+        font: LABEL_FONT,
+        fill: FluidPressureAndFlowColors.textColorProperty,
+        maxWidth: CONTENT_WIDTH - 60,
+      });
+
+    const rulerIcon = createRulerIcon();
+    const measuringTapeIcon = createMeasuringTapeIcon();
+    const hoseIcon = createHoseIcon();
+    const rowWidth =
+      Math.max(
+        label(labels.rulerStringProperty).width + rulerIcon.width,
+        label(labels.measuringTapeStringProperty).width + measuringTapeIcon.width,
+        label(labels.hoseStringProperty).width + hoseIcon.width,
+      ) + 5;
+
     const checkbox = (
       property: BooleanProperty,
       labelProperty: TReadOnlyProperty<string>,
+      icon: ReturnType<typeof createRulerIcon>,
       accessibleName: TReadOnlyProperty<string>,
     ) =>
-      new Checkbox(
-        property,
-        new Text(labelProperty, {
-          font: LABEL_FONT,
-          fill: FluidPressureAndFlowColors.textColorProperty,
-          maxWidth: CONTENT_WIDTH - 30,
-        }),
-        { ...CHECKBOX_OPTIONS, accessibleName: accessibleName },
-      );
+      new Checkbox(property, createLabeledToolRow(label(labelProperty), icon, rowWidth), {
+        ...CHECKBOX_OPTIONS,
+        accessibleName: accessibleName,
+      });
 
     const toggles = new FluidPressureAndFlowPanel(
       new VBox({
         align: "left",
         spacing: 8,
         children: [
-          checkbox(isRulerVisibleProperty, labels.rulerStringProperty, accessibleNames.rulerCheckboxStringProperty),
+          checkbox(
+            isRulerVisibleProperty,
+            labels.rulerStringProperty,
+            rulerIcon,
+            accessibleNames.rulerCheckboxStringProperty,
+          ),
           checkbox(
             isMeasuringTapeVisibleProperty,
             labels.measuringTapeStringProperty,
+            measuringTapeIcon,
             accessibleNames.measuringTapeCheckboxStringProperty,
           ),
-          checkbox(isHoseEnabledProperty, labels.hoseStringProperty, accessibleNames.hoseCheckboxStringProperty),
+          checkbox(
+            isHoseEnabledProperty,
+            labels.hoseStringProperty,
+            hoseIcon,
+            accessibleNames.hoseCheckboxStringProperty,
+          ),
         ],
       }),
       { minWidth: CONTENT_WIDTH },

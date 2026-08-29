@@ -150,7 +150,7 @@
     "waterTower": {
       "screenSummary": {
         "playArea": "A water tower standing on the ground with a faucet above it and a hole near its base. Water leaving the hole falls as a stream that can be measured.",
-        "controlArea": "Controls for the faucet, the hose, the ruler, the measuring tape, the units of every readout, the fluid in the tank, playback speed, and a Reset All button.",
+        "controlArea": "Controls for the faucet, the sluice gate, the hose, the ruler, the measuring tape, the units of every readout, the fluid in the tank, playback speed, and a Reset All button.",
         "interactionHint": "Open the hole at the base of the tank, then raise and lower the tank to see how the height of the water changes the speed of the stream."
       },
       "currentDetails": "The tank is {{fill}} percent full and the hole at its base is {{hole}}.",
@@ -167,7 +167,9 @@
         "speedometer": "Speedometer",
         "ruler": "Ruler",
         "measuringTape": "Measuring Tape",
-        "sluiceControl": "Hole Cover",
+        "sluiceControl": "Sluice Gate",
+        "sluiceClosed": "Sluice Closed",
+        "sluiceOpen": "Sluice Open",
         "tankHandle": "Tank Height",
         "hoseAngleHandle": "Hose Angle"
       }

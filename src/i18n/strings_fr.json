@@ -150,7 +150,7 @@
     "waterTower": {
       "screenSummary": {
         "playArea": "Un château d'eau posé sur le sol, avec un robinet au-dessus et un orifice près de sa base. L'eau qui sort de l'orifice retombe en un jet que l'on peut mesurer.",
-        "controlArea": "Commandes pour le robinet, le tuyau, la règle, le mètre ruban, les unités de chaque affichage, le fluide du réservoir, la vitesse de lecture, et un bouton Tout réinitialiser.",
+        "controlArea": "Commandes pour le robinet, la vanne, le tuyau, la règle, le mètre ruban, les unités de chaque affichage, le fluide du réservoir, la vitesse de lecture, et un bouton Tout réinitialiser.",
         "interactionHint": "Ouvrez l'orifice à la base du réservoir, puis montez et descendez le réservoir pour voir comment la hauteur d'eau modifie la vitesse du jet."
       },
       "currentDetails": "Le réservoir est rempli à {{fill}} pour cent et l'orifice de sa base est {{hole}}.",
@@ -167,7 +167,9 @@
         "speedometer": "Indicateur de vitesse",
         "ruler": "Règle",
         "measuringTape": "Mètre ruban",
-        "sluiceControl": "Couvercle de l'orifice",
+        "sluiceControl": "Vanne",
+        "sluiceClosed": "Vanne fermée",
+        "sluiceOpen": "Vanne ouverte",
         "tankHandle": "Hauteur du réservoir",
         "hoseAngleHandle": "Angle du tuyau"
       }

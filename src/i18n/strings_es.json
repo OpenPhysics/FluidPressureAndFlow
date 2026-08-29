@@ -150,7 +150,7 @@
     "waterTower": {
       "screenSummary": {
         "playArea": "Un depósito de agua elevado sobre el suelo, con un grifo encima y un orificio cerca de su base. El agua que sale del orificio cae como un chorro que se puede medir.",
-        "controlArea": "Controles para el grifo, la manguera, la regla, la cinta métrica, las unidades de cada lectura, el fluido del depósito, la velocidad de reproducción y un botón de Reiniciar todo.",
+        "controlArea": "Controles para el grifo, la compuerta, la manguera, la regla, la cinta métrica, las unidades de cada lectura, el fluido del depósito, la velocidad de reproducción y un botón de Reiniciar todo.",
         "interactionHint": "Abre el orificio de la base del depósito y luego súbelo y bájalo para ver cómo la altura del agua cambia la rapidez del chorro."
       },
       "currentDetails": "El depósito está lleno al {{fill}} por ciento y el orificio de su base está {{hole}}.",
@@ -167,7 +167,9 @@
         "speedometer": "Velocímetro",
         "ruler": "Regla",
         "measuringTape": "Cinta métrica",
-        "sluiceControl": "Tapa del orificio",
+        "sluiceControl": "Compuerta",
+        "sluiceClosed": "Compuerta cerrada",
+        "sluiceOpen": "Compuerta abierta",
         "tankHandle": "Altura del depósito",
         "hoseAngleHandle": "Ángulo de la manguera"
       }

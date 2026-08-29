@@ -22,12 +22,16 @@
  */
 
 import { asyncLoader } from "scenerystack/phet-core";
+import handleUrl from "../../../images/handle.png";
 import handleWithBarUrl from "../../../images/handleWithBar.png";
 import injectorBulbUrl from "../../../images/injectorBulbCropped.png";
+import nozzleUrl from "../../../images/nozzle.png";
 import pipeLeftBackUrl from "../../../images/pipeLeftBack.png";
 import pipeLeftFrontUrl from "../../../images/pipeLeftFront.png";
 import pipeRightUrl from "../../../images/pipeRight.png";
 import pipeSegmentUrl from "../../../images/pipeSegment.png";
+import spoutHandleUrl from "../../../images/spoutHandle.png";
+import wheelUrl from "../../../images/wheel.png";
 
 function preload(url: string): HTMLImageElement {
   const element = document.createElement("img");
@@ -40,7 +44,11 @@ function preload(url: string): HTMLImageElement {
   return element;
 }
 
+export const handleImage = preload(handleUrl);
 export const handleWithBarImage = preload(handleWithBarUrl);
+export const wheelImage = preload(wheelUrl);
+export const nozzleImage = preload(nozzleUrl);
+export const spoutHandleImage = preload(spoutHandleUrl);
 export const injectorBulbImage = preload(injectorBulbUrl);
 export const pipeLeftBackImage = preload(pipeLeftBackUrl);
 export const pipeLeftFrontImage = preload(pipeLeftFrontUrl);

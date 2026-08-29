@@ -1,14 +1,16 @@
 /**
  * WaterTowerNode.ts
  *
- * The tank, its legs, the water in it, and the sliding cover over the hole.
+ * The tank, its legs, the water in it, and the sluice gate at the hole.
  *
- * The whole assembly is draggable vertically. That is the screen's main control:
- * raising the tank with the hose attached raises the water while leaving the
- * outlet where it is, which is the only way to vary the head on its own.
+ * A wheel and rope at the top of the tank show how the gate is raised and
+ * lowered. The whole assembly is draggable vertically by its handle — that is
+ * the screen's main control: raising the tank with the hose attached raises the
+ * water while leaving the outlet where it is, which is the only way to vary the
+ * head on its own.
  *
- * The cover is a separate grab target rather than a checkbox because opening it
- * is the first thing a student has to do, and a thing you slide off a hole is
+ * The gate is a separate grab target rather than a checkbox because opening it
+ * is the first thing a student has to do, and a thing you pull down on a rope is
  * more obviously "the way to let the water out" than a labelled tick box.
  */
 
@@ -17,8 +19,9 @@ import { Multilink, Property, type TReadOnlyProperty } from "scenerystack/axon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
-import { DragListener, KeyboardDragListener, Node, Path, Rectangle } from "scenerystack/scenery";
+import { DragListener, Image, KeyboardDragListener, LinearGradient, Node, Path, Rectangle } from "scenerystack/scenery";
 import { getFluidColor } from "../../common/model/fluidColor.js";
+import { handleImage, wheelImage } from "../../common/view/images.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
 import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { HOLE_SIZE, MAX_TANK_BASE_Y, MIN_TANK_BASE_Y, TANK_HEIGHT, type WaterTower } from "../model/WaterTower.js";
@@ -41,16 +44,23 @@ const KEYBOARD_DRAG_SPEED = 4;
 /** How far the lid overhangs the tank wall on each side, view pixels. */
 const LID_OVERHANG = 3;
 
-/** Size of the cover, relative to the hole it slides over. */
-const COVER_WIDTH_RATIO = 0.6;
-const COVER_HEIGHT_RATIO = 1.4;
+/** Scale for the tank-lift handle bitmap. */
+const HANDLE_SCALE = 0.45;
 
-/** Where the cover's left edge sits, relative to the hole size, when open and when shut. */
-const COVER_OPEN_LEFT_INSET_RATIO = 0.7;
-const COVER_CLOSED_LEFT_INSET_RATIO = 0.2;
+/** Scale for the sluice wheel bitmap. */
+const WHEEL_SCALE = 0.4;
 
-/** Distance the cover slides to clear the hole, relative to the hole size. */
-const COVER_OPEN_DISTANCE_RATIO = 1.5;
+/** Width of the sluice gate, view pixels. */
+const GATE_WIDTH = 5;
+
+/** Height of the sluice gate, relative to the hole size. */
+const GATE_HEIGHT_RATIO = 2.5;
+
+/** How far the gate drops when open, relative to the hole size. */
+const GATE_OPEN_DROP_RATIO = 1.5;
+
+/** How far the wheel turns when the gate is fully open, radians. */
+const WHEEL_OPEN_ROTATION = Math.PI / 3;
 
 export class WaterTowerNode extends Node {
   private readonly disposeWaterTowerNode: () => void;
@@ -60,7 +70,7 @@ export class WaterTowerNode extends Node {
     fluidDensityProperty: NumberProperty,
     modelViewTransform: ModelViewTransform2,
     tankAccessibleName: TReadOnlyProperty<string>,
-    coverAccessibleName: TReadOnlyProperty<string>,
+    sluiceAccessibleName: TReadOnlyProperty<string>,
   ) {
     super();
 
@@ -85,17 +95,36 @@ export class WaterTowerNode extends Node {
       stroke: FluidPressureAndFlowColors.towerStructureColorProperty,
       lineWidth: 2,
     });
-    const cover = new Rectangle(0, 0, 0, 0, 2, 2, {
-      fill: FluidPressureAndFlowColors.massColorProperty,
-      stroke: FluidPressureAndFlowColors.poolEdgeColorProperty,
-      lineWidth: 2,
-      cursor: "pointer",
+    const rope = new Path(null, {
+      stroke: FluidPressureAndFlowColors.towerStructureColorProperty,
+      lineWidth: 1,
+    });
+    const sluiceGate = new Rectangle(0, 0, GATE_WIDTH, 0, {
+      fill: new LinearGradient(0, 0, GATE_WIDTH, 0)
+        .addColorStop(0, "#656570")
+        .addColorStop(0.5, "#dee6f5")
+        .addColorStop(0.7, "#bdc3cf")
+        .addColorStop(1, "#656570"),
+      stroke: FluidPressureAndFlowColors.towerStructureColorProperty,
+      lineWidth: 0.5,
+      cursor: "ns-resize",
       tagName: "div",
       focusable: true,
-      accessibleName: coverAccessibleName,
+      accessibleName: sluiceAccessibleName,
+    });
+    const wheel = new Image(wheelImage, {
+      scale: WHEEL_SCALE,
+      cursor: "ns-resize",
+    });
+    const handle = new Image(handleImage, {
+      scale: HANDLE_SCALE,
+      cursor: "ns-resize",
+      tagName: "div",
+      focusable: true,
+      accessibleName: tankAccessibleName,
     });
 
-    this.children = [legs, braces, tankBody, water, tankWall, lid, cover];
+    this.children = [legs, braces, tankBody, water, tankWall, lid, rope, sluiceGate, wheel, handle];
 
     const layout = () => {
       const base = waterTower.baseCenterProperty.value;
@@ -145,16 +174,31 @@ export class WaterTowerNode extends Node {
       braceShape.lineTo(legBottomX[0] as number, groundY);
       braces.shape = braceShape;
 
-      // The cover sits over the hole in the right-hand wall, and slides clear of
-      // it when the hole is open.
+      handle.centerX = (leftX + rightX) / 2;
+      handle.top = baseY;
+
+      wheel.right = rightX + 3;
+      wheel.bottom = topY;
+
       const holePosition = waterTower.getHolePosition();
       const holeViewSize = modelViewTransform.modelToViewDeltaX(HOLE_SIZE);
-      cover.setRect(0, 0, holeViewSize * COVER_WIDTH_RATIO, holeViewSize * COVER_HEIGHT_RATIO);
-      cover.centerY = modelViewTransform.modelToViewY(holePosition.y);
-      cover.left = waterTower.isHoleOpenProperty.value
-        ? rightX + holeViewSize * COVER_OPEN_LEFT_INSET_RATIO
-        : rightX - holeViewSize * COVER_CLOSED_LEFT_INSET_RATIO;
+      const gateHeight = holeViewSize * GATE_HEIGHT_RATIO;
+      sluiceGate.setRect(0, 0, GATE_WIDTH, gateHeight);
+      sluiceGate.centerX = rightX + GATE_WIDTH / 2;
+
+      const gateDropView = modelViewTransform.modelToViewDeltaY(gateOffsetProperty.value.y);
+      sluiceGate.centerY = modelViewTransform.modelToViewY(holePosition.y) + gateDropView;
+
+      rope.shape = Shape.lineSegment(0, 0, 0, sluiceGate.top - wheel.bottom);
+      rope.right = wheel.right;
+      rope.top = wheel.bottom;
+
+      wheel.rotation = (gateOffsetProperty.value.y / gateOpenY) * WHEEL_OPEN_ROTATION;
     };
+
+    /** Metres the gate drops when the hole is fully open. */
+    const gateOpenY = HOLE_SIZE * GATE_OPEN_DROP_RATIO;
+    const gateOffsetProperty = new Property(new Vector2(0, 0));
 
     const layoutMultilink = Multilink.multilinkAny(
       [
@@ -162,6 +206,7 @@ export class WaterTowerNode extends Node {
         waterTower.fluidVolumeProperty,
         waterTower.capacityProperty,
         waterTower.isHoleOpenProperty,
+        gateOffsetProperty,
         fluidDensityProperty,
       ],
       layout,
@@ -171,24 +216,13 @@ export class WaterTowerNode extends Node {
     const tankDragBounds = new Bounds2(0, MIN_TANK_BASE_Y, 0, MAX_TANK_BASE_Y);
     const tankDragBoundsProperty = new Property(tankDragBounds);
 
-    for (const target of [tankBody, tankWall, legs]) {
-      target.cursor = "ns-resize";
-    }
-    tankBody.tagName = "div";
-    tankBody.focusable = true;
-    tankBody.accessibleName = tankAccessibleName;
-
-    // The tower is drawn at absolute view coordinates, so this node's origin says
-    // nothing about where the tank is. `useParentOffset` measures the grab offset
-    // against baseCenterProperty through the transform, which does.
     const tankDragListener = new DragListener({
       positionProperty: waterTower.baseCenterProperty,
       transform: modelViewTransform,
       useParentOffset: true,
       dragBoundsProperty: tankDragBoundsProperty,
     });
-    tankBody.addInputListener(tankDragListener);
-    tankWall.addInputListener(tankDragListener);
+    handle.addInputListener(tankDragListener);
 
     const tankKeyboardListener = new KeyboardDragListener({
       positionProperty: waterTower.baseCenterProperty,
@@ -197,56 +231,60 @@ export class WaterTowerNode extends Node {
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
       shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
     });
-    tankBody.addInputListener(tankKeyboardListener);
+    handle.addInputListener(tankKeyboardListener);
 
-    // ── Sliding the cover ─────────────────────────────────────────────────────
-    // The cover is all-or-nothing: a partly open hole would make the outlet area
+    // ── Raising and lowering the sluice gate ─────────────────────────────────
+    // The gate is all-or-nothing: a partly open hole would make the outlet area
     // a hidden extra variable, which is exactly what the design set out to avoid.
-    const coverPositionProperty = new Property(new Vector2(0, 0));
 
-    /** Where the cover rests when the hole is open, and when it is shut. */
-    const coverOpenX = HOLE_SIZE * COVER_OPEN_DISTANCE_RATIO;
-    const restingCoverPosition = (isOpen: boolean) => new Vector2(isOpen ? coverOpenX : 0, 0);
+    /** Where the gate rests when the hole is open, and when it is shut. */
+    const restingGateOffset = (isOpen: boolean) => new Vector2(0, isOpen ? gateOpenY : 0);
 
     // The two properties drive each other, so each direction locks the other out for
     // the duration of its write rather than relying on the values happening to settle.
     let isSyncing = false;
 
-    const applyCover = (position: Vector2) => {
+    const applyGateOffset = (offset: Vector2) => {
       if (isSyncing) {
         return;
       }
       isSyncing = true;
-      waterTower.isHoleOpenProperty.value = position.x > HOLE_SIZE / 2;
+      waterTower.isHoleOpenProperty.value = offset.y > HOLE_SIZE / 2;
       isSyncing = false;
     };
-    coverPositionProperty.link(applyCover);
+    gateOffsetProperty.link(applyGateOffset);
 
-    // Anything that opens or shuts the hole without dragging the cover — a reset, most
-    // often — has to bring the drag position with it, or the next drag would measure
-    // its offset from a place the cover is no longer drawn.
-    const syncCover = (isOpen: boolean) => {
+    // Anything that opens or shuts the hole without dragging the gate — a reset, or
+    // the sluice toggle — has to bring the drag position with it, or the next drag
+    // would measure its offset from a place the gate is no longer drawn.
+    const syncGateOffset = (isOpen: boolean) => {
       if (isSyncing) {
         return;
       }
       isSyncing = true;
-      coverPositionProperty.value = restingCoverPosition(isOpen);
+      gateOffsetProperty.value = restingGateOffset(isOpen);
       isSyncing = false;
     };
-    waterTower.isHoleOpenProperty.link(syncCover);
+    waterTower.isHoleOpenProperty.link(syncGateOffset);
 
-    const coverDragListener = new DragListener({
-      positionProperty: coverPositionProperty,
+    const gateDragListener = new DragListener({
+      positionProperty: gateOffsetProperty,
       transform: modelViewTransform,
       useParentOffset: true,
-      dragBoundsProperty: new Property(new Bounds2(0, 0, coverOpenX, 0)),
+      dragBoundsProperty: new Property(new Bounds2(0, 0, 0, gateOpenY)),
       end: () => {
         // Snap to whichever end it is nearer, so it never rests half-way.
-        coverPositionProperty.value = restingCoverPosition(waterTower.isHoleOpenProperty.value);
+        gateOffsetProperty.value = restingGateOffset(waterTower.isHoleOpenProperty.value);
       },
     });
-    cover.addInputListener(coverDragListener);
-    cover.addInputListener({
+    sluiceGate.addInputListener(gateDragListener);
+    wheel.addInputListener(gateDragListener);
+    sluiceGate.addInputListener({
+      click: () => {
+        waterTower.isHoleOpenProperty.value = !waterTower.isHoleOpenProperty.value;
+      },
+    });
+    wheel.addInputListener({
       click: () => {
         waterTower.isHoleOpenProperty.value = !waterTower.isHoleOpenProperty.value;
       },
@@ -254,11 +292,11 @@ export class WaterTowerNode extends Node {
 
     this.disposeWaterTowerNode = () => {
       layoutMultilink.dispose();
-      coverPositionProperty.unlink(applyCover);
-      waterTower.isHoleOpenProperty.unlink(syncCover);
+      gateOffsetProperty.unlink(applyGateOffset);
+      waterTower.isHoleOpenProperty.unlink(syncGateOffset);
       tankDragListener.dispose();
       tankKeyboardListener.dispose();
-      coverDragListener.dispose();
+      gateDragListener.dispose();
     };
   }
 

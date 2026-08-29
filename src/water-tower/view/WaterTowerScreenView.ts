@@ -38,6 +38,7 @@ import { MAX_TANK_VOLUME, MIN_TANK_VOLUME } from "../model/WaterTower.js";
 import { FAUCET_POSITION, type WaterTowerModel } from "../model/WaterTowerModel.js";
 import { FaucetControlPanel } from "./FaucetControlPanel.js";
 import { HoseNode } from "./HoseNode.js";
+import { SluiceControlPanel } from "./SluiceControlPanel.js";
 import { WaterDropsCanvasNode } from "./WaterDropsCanvasNode.js";
 import { WaterTowerControlPanel } from "./WaterTowerControlPanel.js";
 import { WaterTowerNode } from "./WaterTowerNode.js";
@@ -115,7 +116,6 @@ export class WaterTowerScreenView extends ScreenView {
       a11y.controls.tankHandleStringProperty,
       a11y.controls.sluiceControlStringProperty,
     );
-    this.addChild(waterTowerNode);
 
     const hoseNode = new HoseNode(
       model.hose,
@@ -125,6 +125,9 @@ export class WaterTowerScreenView extends ScreenView {
       a11y.controls.hoseAngleHandleStringProperty,
     );
     this.addChild(hoseNode);
+    // The tower is drawn over the hose so the sluice gate can cover the hose
+    // opening when it is closed, as in PhET's HTML5 port.
+    this.addChild(waterTowerNode);
 
     this.dropsCanvas = new WaterDropsCanvasNode(model, modelViewTransform, this.layoutBounds);
     this.addChild(this.dropsCanvas);
@@ -147,6 +150,9 @@ export class WaterTowerScreenView extends ScreenView {
     faucet.bottom = modelViewTransform.modelToViewY(FAUCET_POSITION.y);
     this.addChild(faucet);
 
+    const toolsLayer = new Node();
+    this.addChild(toolsLayer);
+
     // ── Instruments ───────────────────────────────────────────────────────────
     const toolDragBounds = new Bounds2(
       modelViewTransform.viewToModelX(this.layoutBounds.minX + SCREEN_VIEW_MARGIN),
@@ -157,7 +163,7 @@ export class WaterTowerScreenView extends ScreenView {
     const keyboardGrabPosition = new Vector2(modelViewTransform.viewToModelX(this.layoutBounds.minX + 172), 24);
 
     const sensorLayer = new Node();
-    this.addChild(sensorLayer);
+    toolsLayer.addChild(sensorLayer);
 
     const barometerNodes = new Map<Barometer, BarometerNode>();
     const speedometerNodes = new Map<VelocitySensor, VelocitySensorNode>();
@@ -229,7 +235,7 @@ export class WaterTowerScreenView extends ScreenView {
     this.isRulerVisibleProperty.link((isVisible) => {
       ruler.visible = isVisible;
     });
-    this.addChild(ruler);
+    toolsLayer.addChild(ruler);
 
     // The tape measures horizontal distances — the range of the jet, which is
     // what a student needs alongside the ruler's heights to check `v = √(2gh)`
@@ -246,7 +252,7 @@ export class WaterTowerScreenView extends ScreenView {
       textColor: FluidPressureAndFlowColors.textColorProperty,
       dragBounds: toolDragBounds,
     });
-    this.addChild(measuringTape);
+    toolsLayer.addChild(measuringTape);
 
     // ── Controls ──────────────────────────────────────────────────────────────
     const faucetControls = new FaucetControlPanel(
@@ -290,6 +296,11 @@ export class WaterTowerScreenView extends ScreenView {
     tankVolumeControl.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
     tankVolumeControl.top = GROUND_VIEW_Y + PANEL_SPACING;
     this.addChild(tankVolumeControl);
+
+    const sluiceControl = new SluiceControlPanel(model.waterTower.isHoleOpenProperty, a11y.controls);
+    sluiceControl.right = waterTowerNode.right + 36;
+    sluiceControl.bottom = this.layoutBounds.maxY - 70;
+    this.addChild(sluiceControl);
 
     const controlPanel = new WaterTowerControlPanel(
       this.isRulerVisibleProperty,
@@ -350,12 +361,15 @@ export class WaterTowerScreenView extends ScreenView {
     timeControl.centerX = this.layoutBounds.centerX;
     timeControl.bottom = resetAllButton.bottom;
 
+    toolsLayer.moveToFront();
+
     // ── Traversal order ───────────────────────────────────────────────────────
-    // The hole cover first: nothing on this screen happens until it is open.
+    // The sluice gate first: nothing on this screen happens until it is open.
     this.addChild(
       new Node({
         pdomOrder: [
           waterTowerNode,
+          sluiceControl,
           faucet,
           faucetControls,
           tankVolumeControl,
