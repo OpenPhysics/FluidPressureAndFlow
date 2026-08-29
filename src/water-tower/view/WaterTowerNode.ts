@@ -20,6 +20,7 @@ import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, KeyboardDragListener, Node, Path, Rectangle } from "scenerystack/scenery";
 import { getFluidColor } from "../../common/model/fluidColor.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { HOLE_SIZE, MAX_TANK_BASE_Y, MIN_TANK_BASE_Y, TANK_HEIGHT, type WaterTower } from "../model/WaterTower.js";
 
 /** How far the legs splay out from the tank wall, metres. */
@@ -178,7 +179,7 @@ export class WaterTowerNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: tankDragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
     });
     tankBody.addInputListener(tankKeyboardListener);
 

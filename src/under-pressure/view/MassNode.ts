@@ -15,6 +15,7 @@ import { type Bounds2, Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, KeyboardDragListener, Node, Rectangle, Text } from "scenerystack/scenery";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import type { MassModel } from "../model/MassModel.js";
 
 /** Metres the block moves per arrow-key press. */
@@ -99,7 +100,7 @@ export class MassNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: dragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
       start: startDrag,
       end: endDrag,
     });

@@ -18,6 +18,7 @@ import { DragListener, KeyboardDragListener, Node, Path, Text, VBox } from "scen
 import { FluidPressureAndFlowPanel } from "../../common/FluidPressureAndFlowPanel.js";
 import { formatValue, type UnitLabelGroups, type UnitSystem } from "../../common/model/units.js";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import type { FluxMeter } from "../model/FluxMeter.js";
 import type { Pipe } from "../model/Pipe.js";
 
@@ -178,7 +179,7 @@ export class FluxMeterNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: dragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
     });
     this.addInputListener(keyboardDragListener);
 

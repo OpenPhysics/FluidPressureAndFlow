@@ -11,6 +11,7 @@ import { Bounds2, Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, Image, KeyboardDragListener, Node } from "scenerystack/scenery";
 import { handleWithBarImage } from "../../common/view/images.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { MAX_PIPE_Y, MIN_PIPE_HEIGHT, MIN_PIPE_Y, type Pipe } from "../model/Pipe.js";
 import type { PipeCrossSection } from "../model/PipeCrossSection.js";
 import type { PipeNode } from "./PipeNode.js";
@@ -432,7 +433,7 @@ function attachVerticalDrag(
     dragBoundsProperty: dragBoundsProperty,
     mapPosition: constrain,
     dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-    shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+    shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
   });
   wrapper.addInputListener(keyboardDragListener);
 

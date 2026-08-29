@@ -28,7 +28,7 @@ import {
 } from "scenerystack/scenery";
 import { GaugeNode } from "scenerystack/scenery-phet";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
-import { PRESSURE_RANGE } from "../../FluidPressureAndFlowConstants.js";
+import { PRESSURE_RANGE, SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import type { Barometer } from "../model/Barometer.js";
 
 /** Radius of the dial face, view pixels. */
@@ -180,7 +180,7 @@ export class BarometerNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: dragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
       start: () => {
         barometer.isActiveProperty.value = true;
         this.moveToFront();

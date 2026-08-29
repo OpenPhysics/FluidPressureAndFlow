@@ -16,6 +16,7 @@ import { Shape } from "scenerystack/kite";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { Circle, DragListener, KeyboardDragListener, Node, Path } from "scenerystack/scenery";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { HOSE_OUTLET_X, type Hose, MAX_HOSE_OUTLET_Y } from "../model/Hose.js";
 import type { WaterTower } from "../model/WaterTower.js";
 
@@ -33,6 +34,9 @@ const KEYBOARD_DRAG_SPEED = 3;
 
 /** Radians the nozzle swings per arrow-key press. */
 const KEYBOARD_ANGLE_SPEED = 0.6;
+
+/** How far below the bend the curve's control point sits, metres — the visual sag of the hose. */
+const HOSE_SAG_AMOUNT = 1;
 
 export class HoseNode extends Node {
   private readonly disposeHoseNode: () => void;
@@ -87,7 +91,7 @@ export class HoseNode extends Node {
       // A single quadratic through a control point below the bend, so the hose
       // sags the way a hose does instead of running dead straight.
       shape.quadraticCurveToPoint(
-        modelViewTransform.modelToViewPosition(new Vector2(bend.x, Math.min(attach.y, bend.y) - 1)),
+        modelViewTransform.modelToViewPosition(new Vector2(bend.x, Math.min(attach.y, bend.y) - HOSE_SAG_AMOUNT)),
         modelViewTransform.modelToViewPosition(bend),
       );
       shape.lineToPoint(modelViewTransform.modelToViewPosition(outlet));
@@ -131,7 +135,7 @@ export class HoseNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: heightBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
     });
     heightHandle.addInputListener(heightKeyboardListener);
 

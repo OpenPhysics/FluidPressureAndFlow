@@ -25,6 +25,7 @@ import {
 } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import FluidPressureAndFlowColors from "../../FluidPressureAndFlowColors.js";
+import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import type { VelocitySensor } from "../model/VelocitySensor.js";
 
 /** Size of the readout body, view pixels. */
@@ -188,7 +189,7 @@ export class VelocitySensorNode extends Node {
       transform: modelViewTransform,
       dragBoundsProperty: dragBoundsProperty,
       dragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED),
-      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / 4,
+      shiftDragSpeed: modelViewTransform.modelToViewDeltaX(KEYBOARD_DRAG_SPEED) / SHIFT_KEY_SPEED_DIVISOR,
       start: () => this.moveToFront(),
       end: endDrag,
     });
