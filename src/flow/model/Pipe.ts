@@ -369,7 +369,11 @@ export class Pipe {
 
   /** Velocity of a particle at a point, with the friction profile applied. */
   public getTweakedVelocity(x: number, y: number): Vector2 {
-    return new Vector2(this.getTweakedVx(x, y), this.getVelocity(x, y).y);
+    const velocity = this.getVelocity(x, y);
+    if (!this.isFrictionEnabledProperty.value) {
+      return velocity;
+    }
+    return velocity.timesScalar(frictionProfile(this.getFractionToTop(x, y)));
   }
 
   /** True if the point is inside the pipe. */

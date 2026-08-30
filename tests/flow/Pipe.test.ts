@@ -102,6 +102,26 @@ describe("Pipe", () => {
       expect(nearWall).toBeGreaterThan(0);
     });
 
+    it("scales both components of velocity in a sloped pipe", () => {
+      const middle = pipe.crossSections[3];
+      expect(middle).toBeDefined();
+      if (!middle) {
+        return;
+      }
+      middle.topYProperty.value = -1.5;
+      middle.bottomYProperty.value = -3.5;
+
+      const x = -1;
+      const y = pipe.fractionToY(x, 0.9);
+      const withoutFriction = pipe.getVelocity(x, y);
+      expect(Math.abs(withoutFriction.y)).toBeGreaterThan(1e-6);
+
+      pipe.isFrictionEnabledProperty.value = true;
+      const withFriction = pipe.getTweakedVelocity(x, y);
+      expect(Math.abs(withFriction.y)).toBeLessThan(Math.abs(withoutFriction.y));
+      expect(withFriction.x / withoutFriction.x).toBeCloseTo(withFriction.y / withoutFriction.y, 6);
+    });
+
     it("reduces flow through a constriction at a fixed pump setting", () => {
       const requestedFlow = pipe.flowRateProperty.value;
       pipe.isFrictionEnabledProperty.value = true;

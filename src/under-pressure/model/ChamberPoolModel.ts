@@ -247,9 +247,11 @@ export class ChamberPoolModel extends Pool {
 
   // ── Dynamics ────────────────────────────────────────────────────────────────
 
-  /** The masses that have been dropped into the left opening and released. */
+  /** The masses that have been dropped into the narrow left opening and released. */
   public getStackedMasses(): MassModel[] {
-    return this.masses.filter((mass) => mass.getBottomY() < 0 && !mass.isDraggingProperty.value);
+    return this.masses.filter(
+      (mass) => mass.getBottomY() < 0 && this.isOverLeftOpening(mass) && !mass.isDraggingProperty.value,
+    );
   }
 
   /**
@@ -265,16 +267,27 @@ export class ChamberPoolModel extends Pool {
     return Math.abs(RESTING_COLUMN_HEIGHT - this.leftColumnHeightProperty.value);
   }
 
-  /** True if the block's footprint overlaps either opening, so it can be dropped in. */
-  public isOverAnOpening(mass: MassModel): boolean {
+  /** True if the block's footprint overlaps the narrow opening that accepts weights. */
+  public isOverLeftOpening(mass: MassModel): boolean {
     const bounds = mass.getBounds();
-    const overLeft =
+    return (
       bounds.maxX > LEFT_CHAMBER_CENTER_X - CHAMBER_LEFT_OPENING_WIDTH / 2 &&
-      bounds.minX < LEFT_CHAMBER_CENTER_X + CHAMBER_LEFT_OPENING_WIDTH / 2;
-    const overRight =
-      bounds.maxX > RIGHT_CHAMBER_CENTER_X - RIGHT_OPENING_WIDTH / 2 &&
-      bounds.minX < RIGHT_CHAMBER_CENTER_X + RIGHT_OPENING_WIDTH / 2;
-    return overLeft || overRight;
+      bounds.minX < LEFT_CHAMBER_CENTER_X + CHAMBER_LEFT_OPENING_WIDTH / 2
+    );
+  }
+
+  /**
+   * Resolves a released mass.
+   *
+   * Only the narrow left shaft accepts a weight. A block released underground
+   * elsewhere is returned to the grass instead of becoming an invisible load on
+   * the press.
+   */
+  public releaseMass(mass: MassModel): void {
+    if (mass.getBottomY() < TOP_OF_GRASS && !this.isOverLeftOpening(mass)) {
+      mass.setBottomY(TOP_OF_GRASS);
+      mass.velocityProperty.value = 0;
+    }
   }
 
   public override step(dt: number, context: PressureContext): void {

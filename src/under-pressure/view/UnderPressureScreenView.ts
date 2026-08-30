@@ -210,7 +210,10 @@ export class UnderPressureScreenView extends ScreenView {
           screenStrings.massLabelPatternStringProperty,
           a11y.controls.massStringProperty,
           massDragBounds,
-          () => model.updateSensorValues(),
+          () => {
+            model.chamberPool.releaseMass(mass);
+            model.updateSensorValues();
+          },
         ),
       );
     }

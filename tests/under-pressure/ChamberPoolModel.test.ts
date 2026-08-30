@@ -8,9 +8,14 @@
  * See doc/model.md for why it is widths.
  */
 
+import { Vector2 } from "scenerystack/dot";
 import { beforeEach, describe, expect, it } from "vitest";
 import { EARTH_GRAVITY, WATER_DENSITY } from "../../src/FluidPressureAndFlowConstants.js";
-import { ChamberPoolModel } from "../../src/under-pressure/model/ChamberPoolModel.js";
+import {
+  CHAMBER_LEFT_OPENING_CENTER_X,
+  ChamberPoolModel,
+  TOP_OF_GRASS,
+} from "../../src/under-pressure/model/ChamberPoolModel.js";
 import type { PressureContext } from "../../src/under-pressure/model/Pool.js";
 
 const CONTEXT: PressureContext = {
@@ -106,12 +111,25 @@ describe("ChamberPoolModel", () => {
       return;
     }
     // Set the block down on the water in the narrow opening.
-    mass.positionProperty.value = mass.positionProperty.value.copy();
+    mass.positionProperty.value = new Vector2(CHAMBER_LEFT_OPENING_CENTER_X, mass.getBottomY());
     mass.setBottomY(pool.getLeftSurfaceY());
     for (let i = 0; i < 30; i++) {
       pool.step(1 / 60, CONTEXT);
     }
     expect(pool.getLeftSurfaceY()).toBeLessThan(pool.getRightSurfaceY());
+  });
+
+  it("does not let a mass released underground away from the narrow opening load the press", () => {
+    const mass = pool.masses[0];
+    expect(mass).toBeDefined();
+    if (!mass) {
+      return;
+    }
+    mass.positionProperty.value = new Vector2(1, -1);
+    pool.releaseMass(mass);
+
+    expect(mass.getBottomY()).toBe(TOP_OF_GRASS);
+    expect(pool.getStackedMasses()).toHaveLength(0);
   });
 
   it("resets both columns and every mass", () => {

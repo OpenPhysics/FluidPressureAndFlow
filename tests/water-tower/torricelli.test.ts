@@ -10,7 +10,7 @@
  * make the sim teach the opposite of Torricelli's law.
  */
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { EARTH_GRAVITY } from "../../src/FluidPressureAndFlowConstants.js";
 import { FaucetMode } from "../../src/water-tower/model/FaucetMode.js";
 import { TANK_RADIUS, TANK_VOLUME } from "../../src/water-tower/model/WaterTower.js";
@@ -268,5 +268,11 @@ describe("pressure in the tank", () => {
     const pressureInHose = model.getPressureAt(17, 4);
     expect(pressureInHose).not.toBeNull();
     expect(pressureInHose as number).toBeGreaterThan(model.getAirPressure(4));
+  });
+
+  it("refreshes sensor readings when the hose angle changes", () => {
+    const updateSensors = vi.spyOn(model, "updateSensorValues");
+    model.hose.angleProperty.value = 0;
+    expect(updateSensors).toHaveBeenCalledOnce();
   });
 });

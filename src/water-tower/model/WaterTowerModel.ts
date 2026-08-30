@@ -115,6 +115,7 @@ export class WaterTowerModel extends FluidPressureAndFlowModel {
     this.waterTower.capacityProperty.link(() => this.updateSensorValues());
     this.hose.isEnabledProperty.link(() => this.updateSensorValues());
     this.hose.outletYProperty.link(() => this.updateSensorValues());
+    this.hose.angleProperty.link(() => this.updateSensorValues());
   }
 
   /** Where fluid leaves the system: the hole in the tank, or the hose nozzle. */
