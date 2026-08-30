@@ -2,12 +2,12 @@
  * HoseNode.ts
  *
  * The optional hose: a U-shaped green pipe from the tank's outlet to a nozzle
- * the student can raise, lower and aim. Geometry and imagery follow PhET's Java
- * port (HoseGeometry + HoseNode) and HTML5 port (nozzle and spout-handle
- * bitmaps).
+ * the student can raise, lower and aim. Geometry follows PhET's HTML5 port
+ * (Kite arcs via createTopShape / createBottomShape); nozzle and spout-handle
+ * imagery match the same port.
  */
 
-import { Multilink, Property, type TReadOnlyProperty } from "scenerystack/axon";
+import { DerivedProperty, Multilink, Property, type TReadOnlyProperty } from "scenerystack/axon";
 import { Bounds2, Vector2 } from "scenerystack/dot";
 import type { ModelViewTransform2 } from "scenerystack/phetcommon";
 import { DragListener, Image, KeyboardDragListener, Node, Path } from "scenerystack/scenery";
@@ -15,8 +15,14 @@ import { handleImage, nozzleImage, spoutHandleImage } from "../../common/view/im
 import { SHIFT_KEY_SPEED_DIVISOR } from "../../FluidPressureAndFlowConstants.js";
 import { HOSE_OUTLET_X, type Hose, MAX_HOSE_OUTLET_Y } from "../model/Hose.js";
 import type { WaterTower } from "../model/WaterTower.js";
-import { HOLE_SIZE } from "../model/WaterTower.js";
-import { createHoseViewShape, getHoseGeometryPoints, getHoseHeightHandlePoint } from "./HoseGeometry.js";
+import {
+  computeHoseLayout,
+  createHoseShape,
+  getHoseHeightHandlePoint,
+  getHoseMouthPoint,
+  getMinOutletY,
+  HOSE_LAYOUT_WIDTH,
+} from "./HoseGeometry.js";
 
 /** Hose fill and rim colours — match PhET's green hose with a grey edge. */
 const HOSE_FILL = "#00FF00";
@@ -52,7 +58,7 @@ export class HoseNode extends Node {
   ) {
     super();
 
-    const hoseViewWidth = Math.abs(modelViewTransform.modelToViewDeltaY(HOLE_SIZE)) * 1.5;
+    const hoseViewWidth = Math.abs(modelViewTransform.modelToViewDeltaY(HOSE_LAYOUT_WIDTH));
 
     const pipe = new Path(null, {
       fill: HOSE_FILL,
@@ -68,8 +74,12 @@ export class HoseNode extends Node {
       focusable: true,
       accessibleName: heightAccessibleName,
     });
+    heightHandle.touchArea = heightHandle.localBounds.dilatedXY(20, 20);
 
     const nozzle = new Image(nozzleImage, { scale: NOZZLE_SCALE });
+    // Bottom-centre of the bitmap is where the green hose meets the grey nozzle.
+    nozzle.left = -nozzle.width / 2;
+    nozzle.bottom = 0;
 
     const spoutHandle = new Node({
       children: [new Image(spoutHandleImage, { scale: SPOUT_HANDLE_SCALE })],
@@ -79,34 +89,38 @@ export class HoseNode extends Node {
       accessibleName: angleAccessibleName,
     });
     spoutHandle.touchArea = spoutHandle.localBounds.dilated(SPOUT_HANDLE_HIT_PADDING);
+    spoutHandle.bottom = nozzle.bottom;
+    spoutHandle.left = nozzle.right - 4;
 
     const spoutAndNozzle = new Node({ children: [nozzle, spoutHandle] });
 
     this.children = [pipe, heightHandle, spoutAndNozzle];
 
     const layout = () => {
-      const attachment = waterTower.getHolePosition();
+      const base = waterTower.baseCenterProperty.value;
+      const holeX = base.x + waterTower.getRadius();
       const outlet = hose.getOutletPosition();
       const angle = hose.angleProperty.value;
+      const pivotX = outlet.x - holeX;
+      const pivotY = outlet.y - base.y;
+      const hoseLayout = computeHoseLayout(pivotX, pivotY, angle);
 
-      pipe.shape = createHoseViewShape(attachment, HOLE_SIZE, outlet, angle, modelViewTransform, hoseViewWidth);
+      pipe.shape = createHoseShape(hoseLayout, holeX, base.y, modelViewTransform);
 
-      const geometry = getHoseGeometryPoints(attachment, HOLE_SIZE, outlet, angle);
-      const handlePoint = getHoseHeightHandlePoint(geometry);
-      heightHandle.center = modelViewTransform.modelToViewPosition(handlePoint);
-      heightHandle.bottom = heightHandle.centerY + hoseViewWidth / 2;
+      const handlePoint = getHoseHeightHandlePoint(hoseLayout, holeX, base.y);
+      const handleView = modelViewTransform.modelToViewPosition(handlePoint);
+      heightHandle.centerX = handleView.x;
+      heightHandle.bottom = handleView.y + hoseViewWidth / 2;
 
-      const nozzleView = modelViewTransform.modelToViewPosition(outlet);
-      spoutAndNozzle.rotation = Math.PI / 2 - angle;
-      spoutAndNozzle.centerX = nozzleView.x;
-      spoutAndNozzle.y = nozzleView.y;
-
-      spoutHandle.bottom = nozzle.bottom;
-      spoutHandle.left = nozzle.right - 4;
+      const mouthPoint = getHoseMouthPoint(hoseLayout, holeX, base.y);
+      const mouthView = modelViewTransform.modelToViewPosition(mouthPoint);
+      spoutAndNozzle.rotation = hoseLayout.angleWithVertical;
+      spoutAndNozzle.x = mouthView.x;
+      spoutAndNozzle.y = mouthView.y;
     };
 
     const layoutMultilink = Multilink.multilinkAny(
-      [hose.outletYProperty, hose.angleProperty, waterTower.baseCenterProperty],
+      [hose.outletYProperty, hose.angleProperty, waterTower.baseCenterProperty, waterTower.capacityProperty],
       layout,
     );
 
@@ -123,7 +137,13 @@ export class HoseNode extends Node {
     };
     hose.outletYProperty.link(syncHeight);
 
-    const heightBoundsProperty = new Property(new Bounds2(HOSE_OUTLET_X, 0, HOSE_OUTLET_X, MAX_HOSE_OUTLET_Y));
+    const heightBoundsProperty = new DerivedProperty(
+      [hose.angleProperty, waterTower.baseCenterProperty],
+      (angle, base) => {
+        const minY = base.y + getMinOutletY(angle);
+        return new Bounds2(HOSE_OUTLET_X, minY, HOSE_OUTLET_X, MAX_HOSE_OUTLET_Y);
+      },
+    );
     const heightDragListener = new DragListener({
       positionProperty: heightPositionProperty,
       transform: modelViewTransform,
@@ -172,6 +192,7 @@ export class HoseNode extends Node {
       heightPositionProperty.unlink(applyHeight);
       hose.outletYProperty.unlink(syncHeight);
       hose.isEnabledProperty.unlink(updateVisibility);
+      heightBoundsProperty.dispose();
       heightDragListener.dispose();
       heightKeyboardListener.dispose();
       angleDragListener.dispose();

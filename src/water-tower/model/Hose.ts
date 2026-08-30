@@ -24,15 +24,25 @@ export const MAX_HOSE_OUTLET_Y = 14;
 /** Radius of the hose bore represented by the model, metres. */
 export const HOSE_RADIUS = 0.4;
 
+/** Length of the straight nozzle beyond the last bend, metres. */
+export const HOSE_NOZZLE_LENGTH = 2.4;
+
 /** Angle straight up, radians. Zero is horizontal, to the right. */
 const INITIAL_ANGLE = Math.PI / 2;
+
+/**
+ * Where the nozzle starts, metres. Below the tank's hole, so there is head to
+ * measure from the first frame, and high enough that the hose's own lower bend
+ * clears the ground while the nozzle points straight up.
+ */
+const INITIAL_OUTLET_Y = 9;
 
 export class Hose {
   /** Whether the hose is attached. */
   public readonly isEnabledProperty = new BooleanProperty(false);
 
   /** Altitude of the nozzle's mouth, metres. */
-  public readonly outletYProperty = new NumberProperty(0, { units: "m" });
+  public readonly outletYProperty = new NumberProperty(INITIAL_OUTLET_Y, { units: "m" });
 
   /** Direction the nozzle points, radians. 0 is horizontal-right, π/2 straight up. */
   public readonly angleProperty = new NumberProperty(INITIAL_ANGLE, { units: "radians" });
@@ -50,18 +60,20 @@ export class Hose {
   /**
    * Whether a model point lies in the water-filled hose.
    *
-   * The view and the model use the same quadratic sag followed by the short
-   * straight nozzle. Keeping this test in the model prevents a barometer from
-   * treating water inside the hose as open air (upstream issue #322).
+   * A quadratic sag into the last straight nozzle run: the two endpoints and the
+   * nozzle match the drawn hose, but the route between them is smooth where the
+   * view has a squared-off riser, so a barometer parked just outside a bend can
+   * disagree with the picture by about a bore. Keeping the test here at all is
+   * what stops a barometer treating water inside the hose as open air, which is
+   * the open question in upstream issue #322.
    */
   public containsPoint(attachment: Vector2, x: number, y: number): boolean {
     if (!this.isEnabledProperty.value) {
       return false;
     }
     const outlet = this.getOutletPosition();
-    const nozzleLength = 2.4;
     const direction = this.getDirection();
-    const bend = outlet.minus(direction.timesScalar(nozzleLength));
+    const bend = outlet.minus(direction.timesScalar(HOSE_NOZZLE_LENGTH));
     const control = new Vector2(bend.x, Math.min(attachment.y, bend.y) - 1);
     let previous = attachment;
     const samples = 24;

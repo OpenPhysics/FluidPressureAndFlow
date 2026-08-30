@@ -56,11 +56,8 @@ const GATE_WIDTH = 5;
 /** Height of the sluice gate, relative to the hole size. */
 const GATE_HEIGHT_RATIO = 2.5;
 
-/** How far the gate drops when open, relative to the hole size. */
-const GATE_OPEN_DROP_RATIO = 1.5;
-
-/** How far the wheel turns when the gate is fully open, radians. */
-const WHEEL_OPEN_ROTATION = Math.PI / 3;
+/** View pixels the gate drops past the hole when fully open (PhET HTML5 port). */
+const GATE_OPEN_VIEW_NUDGE = 5;
 
 export class WaterTowerNode extends Node {
   private readonly disposeWaterTowerNode: () => void;
@@ -180,24 +177,24 @@ export class WaterTowerNode extends Node {
       wheel.right = rightX + 3;
       wheel.bottom = topY;
 
-      const holePosition = waterTower.getHolePosition();
       const holeViewSize = modelViewTransform.modelToViewDeltaX(HOLE_SIZE);
       const gateHeight = holeViewSize * GATE_HEIGHT_RATIO;
       sluiceGate.setRect(0, 0, GATE_WIDTH, gateHeight);
-      sluiceGate.centerX = rightX + GATE_WIDTH / 2;
+      sluiceGate.left = rightX;
 
-      const gateDropView = modelViewTransform.modelToViewDeltaY(gateOffsetProperty.value.y);
-      sluiceGate.centerY = modelViewTransform.modelToViewY(holePosition.y) + gateDropView;
+      const gateDrop = gateOffsetProperty.value.y;
+      sluiceGate.bottom =
+        baseY + modelViewTransform.modelToViewDeltaY(gateDrop) - (gateDrop > 0 ? GATE_OPEN_VIEW_NUDGE : 0);
 
-      rope.shape = Shape.lineSegment(0, 0, 0, sluiceGate.top - wheel.bottom);
+      const tankViewHeight = baseY - topY;
+      const ropeLength = tankViewHeight - Math.abs(modelViewTransform.modelToViewDeltaX(HOLE_SIZE * 1.5));
+      rope.shape = Shape.lineSegment(0, ropeLength, 0, 0);
       rope.right = wheel.right;
       rope.top = wheel.bottom;
-
-      wheel.rotation = (gateOffsetProperty.value.y / gateOpenY) * WHEEL_OPEN_ROTATION;
     };
 
     /** Metres the gate drops when the hole is fully open. */
-    const gateOpenY = HOLE_SIZE * GATE_OPEN_DROP_RATIO;
+    const gateOpenY = HOLE_SIZE;
     const gateOffsetProperty = new Property(new Vector2(0, 0));
 
     const layoutMultilink = Multilink.multilinkAny(

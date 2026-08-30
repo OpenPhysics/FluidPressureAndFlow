@@ -268,6 +268,11 @@ export class WaterTowerScreenView extends ScreenView {
     faucetControls.top = this.layoutBounds.minY + SCREEN_VIEW_MARGIN;
     this.addChild(faucetControls);
 
+    const sluiceControl = new SluiceControlPanel(model.waterTower.isHoleOpenProperty, a11y.controls);
+    sluiceControl.right = waterTowerNode.right + 36;
+    sluiceControl.bottom = this.layoutBounds.maxY - 70;
+    this.addChild(sluiceControl);
+
     const tankVolumeControl = new FluidPressureAndFlowPanel(
       new VBox({
         align: "left",
@@ -289,18 +294,11 @@ export class WaterTowerScreenView extends ScreenView {
         ],
       }),
     );
-    // On the ground below the tower rather than stacked under the faucet controls.
-    // The tank can be raised to most of the screen height, so the whole left-hand
-    // column above the ground line has to stay clear of it — and resizing the tank
-    // is easiest to read with the tank directly above the slider.
+    // Below the sluice toggle so the two left-hand controls do not overlap. The
+    // slider stays under the tower where resizing the tank is easiest to read.
     tankVolumeControl.left = this.layoutBounds.minX + SCREEN_VIEW_MARGIN;
-    tankVolumeControl.top = GROUND_VIEW_Y + PANEL_SPACING;
+    tankVolumeControl.top = sluiceControl.bottom + PANEL_SPACING;
     this.addChild(tankVolumeControl);
-
-    const sluiceControl = new SluiceControlPanel(model.waterTower.isHoleOpenProperty, a11y.controls);
-    sluiceControl.right = waterTowerNode.right + 36;
-    sluiceControl.bottom = this.layoutBounds.maxY - 70;
-    this.addChild(sluiceControl);
 
     const controlPanel = new WaterTowerControlPanel(
       this.isRulerVisibleProperty,
