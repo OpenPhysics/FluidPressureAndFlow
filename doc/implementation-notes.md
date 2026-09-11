@@ -22,7 +22,7 @@ src/
 
 Screen folders are kebab-case, each with `model/` and `view/`, and `model/` never
 imports from `view/`. This is the fleet convention
-([Baton/CONVENTIONS.md](https://github.com/OpenPhysics/Baton/blob/main/CONVENTIONS.md) §2).
+([Baton/CONVENTIONS.md](https://github.com/OpenLyceum/Baton/blob/main/CONVENTIONS.md) §2).
 
 ## What is shared, and why
 

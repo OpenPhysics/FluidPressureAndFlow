@@ -1,6 +1,6 @@
 # Credits
 
-**Fluid Pressure and Flow** is an OpenPhysics SceneryStack recreation of the
+**Fluid Pressure and Flow** is an OpenLyceum SceneryStack recreation of the
 simulation of the same name by
 [PhET Interactive Simulations](https://phet.colorado.edu/) at the University of
 Colorado Boulder.
@@ -26,7 +26,7 @@ in [`doc/model.md`](doc/model.md) and
 
 ## This recreation
 
-Built by OpenPhysics on [SceneryStack](https://scenerystack.org/). All artwork is
+Built by OpenLyceum on [SceneryStack](https://scenerystack.org/). All artwork is
 drawn vectorially in Scenery; no assets from the original simulations are
 redistributed here.
 

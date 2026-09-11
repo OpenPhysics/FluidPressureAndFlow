@@ -58,12 +58,12 @@ Then open the URL Vite prints (by default <http://localhost:5173>).
 ## License
 
 MIT. See the [organization
-defaults](https://github.com/OpenPhysics/.github/blob/main/LICENSE).
+defaults](https://github.com/OpenLyceum/.github/blob/main/LICENSE).
 
 ## Contributing
 
 See the [organization contributing
-guide](https://github.com/OpenPhysics/.github/blob/main/CONTRIBUTING.md).
+guide](https://github.com/OpenLyceum/.github/blob/main/CONTRIBUTING.md).
 Physics and architecture are documented in [`doc/model.md`](doc/model.md) and
 [`doc/implementation-notes.md`](doc/implementation-notes.md); attribution for the
 original simulation is in [`CREDITS.md`](CREDITS.md).

@@ -87,7 +87,7 @@ onReadyToLaunch(() => {
     // Credits shown in Help → About. The design is PhET's; this is a port.
     credits: {
       leadDesign: "Sam Reid (PhET Interactive Simulations)",
-      softwareDevelopment: "OpenPhysics, ported from PhET Interactive Simulations",
+      softwareDevelopment: "OpenLyceum, ported from PhET Interactive Simulations",
       team: "Noah Podolefsky, Ariel Paul, Trish Loeblein, Kathy Perkins, Rachel Pepper, Bryce Gruneich, John Blanco",
       qualityAssurance: "PhET Interactive Simulations",
     },
